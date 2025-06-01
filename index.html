@@ -347,6 +347,28 @@
             </div>
         </div>
     </div>
+    <!-- En index.html -->
+    <div class="calculadora">
+      <h2>Calculadora de Aislamiento Acústico</h2>
+      
+      <div class="espectros">
+        <div class="emisor">
+          <h3>Espectro Emisor 1</h3>
+          ${generarInputsEspectro('emisor1')}
+        </div>
+        
+        <div class="emisor">
+          <h3>Espectro Emisor 2</h3>
+          ${generarInputsEspectro('emisor2')}
+        </div>
+      </div>
+    
+      <button onclick="calcularAislamiento()">Calcular</button>
+      
+      <div id="resultados"></div>
+    </div>
+
+
 
     <script src="app.js"></script>
 </body>
