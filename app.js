@@ -626,6 +626,21 @@ function obtenerEspectro(id) {
   };
 }
 
+function mostrarResultado() {
+  try {
+    const espectro = obtenerEspectroDesdeFormulario();
+    const aislamiento = obtenerAislamientoGlobalCalculado(); 
+    const dBA = calcularNivelGlobalPonderadoA(espectro, aislamiento);
+    
+    document.getElementById('resultado').innerHTML = `
+      <strong>Nivel Global Ponderado A:</strong> ${dBA} dBA
+    `;
+  } catch (error) {
+    document.getElementById('resultado').innerHTML = `
+      <div class="error">⚠️ Error: ${error.message}</div>
+    `;
+  }
+}
 
 
 
