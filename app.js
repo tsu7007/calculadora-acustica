@@ -4,11 +4,7 @@
 // Datos de configuración
 const CONFIG = {
     frecuenciasEstandar: [63, 125, 250, 500, 1000, 2000, 4000],
-    espectrosEmisores: {
-        1: [70, 80, 65, 60, 51, 65, 54],
-        2: [75, 75, 64, 58, 52, 51, 60]
-    },
-    ponderacionA: [-26, -16, -9, -3, 0, 1, 1],
+
     ejemplosCodigo: {
         caso1: `/**
  * Calcula el aislamiento de una fachada compuesta.
