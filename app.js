@@ -574,6 +574,24 @@ function debounce(func, wait) {
 }
 
 
+function calcularNivelGlobalPonderadoA(espectro, aislamientoGlobal) {
+  const PONDERACION_A = { 
+    '63': -26, '125': -16, '250': -9, 
+    '500': -3, '1k': 0, '2k': 1, '4k': 1 
+  };
+
+  let sumaEnergia = 0;
+  const frecuencias = ['63', '125', '250', '500', '1k', '2k', '4k'];
+
+  frecuencias.forEach(freq => {
+    const nivelReceptor = espectro[freq] - aislamientoGlobal[freq];
+    const nivelPonderadoA = nivelReceptor + PONDERACION_A[freq];
+    sumaEnergia += Math.pow(10, nivelPonderadoA / 10);
+  });
+
+  return (10 * Math.log10(sumaEnergia)).toFixed(1);
+}
+
 
 
 
