@@ -257,6 +257,24 @@
                                     <!-- Se llenará dinámicamente -->
                                 </tbody>
                             </table>
+                            <h3>Espectro Emisor 1</h3>
+                            <input type="number" id="emisor1-63" value="70"> 63 Hz
+                            <input type="number" id="emisor1-125" value="80"> 125 Hz
+                            <input type="number" id="emisor1-250" value="65"> 250 Hz
+                            <input type="number" id="emisor1-500" value="60"> 500 Hz
+                            <input type="number" id="emisor1-1k" value="51"> 1k Hz
+                            <input type="number" id="emisor1-2k" value="65"> 2k Hz
+                            <input type="number" id="emisor1-4k" value="54"> 4k Hz
+                            
+                            <h3>Espectro Emisor 2</h3>
+                            <input type="number" id="emisor2-63" value="75"> 63 Hz
+                            <input type="number" id="emisor2-125" value="75"> 125 Hz
+                            <input type="number" id="emisor2-250" value="65"> 250 Hz
+                            <input type="number" id="emisor2-500" value="60"> 500 Hz
+                            <input type="number" id="emisor2-1k" value="51"> 1k Hz
+                            <input type="number" id="emisor2-2k" value="65"> 2k Hz
+                            <input type="number" id="emisor2-4k" value="54"> 4k Hz
+
                         </div>
 
                         <!-- Resultado final -->
@@ -346,26 +364,6 @@
                 </div>
             </div>
         </div>
-    </div>
-    <!-- En index.html -->
-    <div class="calculadora">
-      <h2>Calculadora de Aislamiento Acústico</h2>
-      
-      <div class="espectros">
-        <div class="emisor">
-          <h3>Espectro Emisor 1</h3>
-          ${generarInputsEspectro('emisor1')}
-        </div>
-        
-        <div class="emisor">
-          <h3>Espectro Emisor 2</h3>
-          ${generarInputsEspectro('emisor2')}
-        </div>
-      </div>
-    
-      <button onclick="calcularAislamiento()">Calcular</button>
-      
-      <div id="resultados"></div>
     </div>
 
 
