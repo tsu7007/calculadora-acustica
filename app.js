@@ -4,7 +4,10 @@
 // Datos de configuración
 const CONFIG = {
     frecuenciasEstandar: [63, 125, 250, 500, 1000, 2000, 4000],
-
+    espectrosEmisores: {
+        1: [70, 80, 65, 60, 51, 65, 54],
+        2: [75, 75, 64, 58, 52, 51, 60]
+    },
     ponderacionA: [-26, -16, -9, -3, 0, 1, 1],
     ejemplosCodigo: {
         caso1: `/**
@@ -568,6 +571,53 @@ function debounce(func, wait) {
         timeout = setTimeout(later, wait);
     };
 }
+
+
+// Ponderación A fija según norma
+const ponderacionA = {
+  "63": -26,
+  "125": -16,
+  "250": -9,
+  "500": -3,
+  "1k": 0,
+  "2k": 1,
+  "4k": 1
+};
+
+const frecuencias = ["63", "125", "250", "500", "1k", "2k", "4k"];
+
+function obtenerEspectro(emisor) {
+  let espectro = {};
+  frecuencias.forEach(f => {
+    espectro[f] = parseFloat(document.getElementById(`${emisor}-${f}`).value) || 0;
+  });
+  return espectro;
+}
+
+function calcular() {
+  const emisor1 = obtenerEspectro("emisor1");
+  const emisor2 = obtenerEspectro("emisor2");
+
+  // Ejemplo: suma ponderada A de cada espectro (puedes adaptar el cálculo a tus necesidades)
+  const resultado1 = calcularNivelPonderadoA(emisor1);
+  const resultado2 = calcularNivelPonderadoA(emisor2);
+
+  document.getElementById("resultado").innerHTML =
+    `<h3>Resultado Espectro Emisor 1: ${resultado1.toFixed(2)} dBA</h3>
+     <h3>Resultado Espectro Emisor 2: ${resultado2.toFixed(2)} dBA</h3>`;
+}
+
+function calcularNivelPonderadoA(espectro) {
+  // Suma energética: L_A = 10*log10(sum(10^((L+PondA)/10)))
+  let suma = 0;
+  frecuencias.forEach(f => {
+    // Para 1k y 2k, el id es "1k", "2k", etc.
+    const pond = ponderacionA[f];
+    suma += Math.pow(10, (espectro[f] + pond) / 10);
+  });
+  return 10 * Math.log10(suma);
+}
+
 
 
 // Obtener espectro desde inputs
