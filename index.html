@@ -257,23 +257,57 @@
                                     <!-- Se llenará dinámicamente -->
                                 </tbody>
                             </table>
-                            <h3>Espectro Emisor 1</h3>
-                            <input type="number" id="emisor1-63" value="70"> 63 Hz
-                            <input type="number" id="emisor1-125" value="80"> 125 Hz
-                            <input type="number" id="emisor1-250" value="65"> 250 Hz
-                            <input type="number" id="emisor1-500" value="60"> 500 Hz
-                            <input type="number" id="emisor1-1k" value="51"> 1k Hz
-                            <input type="number" id="emisor1-2k" value="65"> 2k Hz
-                            <input type="number" id="emisor1-4k" value="54"> 4k Hz
+                            <h2>Espectro Emisor 1</h2>
+                              <table id="tabla-emisor1" border="1">
+                                <tr>
+                                  <th>Frecuencia (Hz)</th>
+                                  <th>63</th>
+                                  <th>125</th>
+                                  <th>250</th>
+                                  <th>500</th>
+                                  <th>1k</th>
+                                  <th>2k</th>
+                                  <th>4k</th>
+                                </tr>
+                                <tr>
+                                  <td>Nivel (dB)</td>
+                                  <td><input type="number" id="emisor1-63" value="70"></td>
+                                  <td><input type="number" id="emisor1-125" value="80"></td>
+                                  <td><input type="number" id="emisor1-250" value="65"></td>
+                                  <td><input type="number" id="emisor1-500" value="60"></td>
+                                  <td><input type="number" id="emisor1-1k" value="51"></td>
+                                  <td><input type="number" id="emisor1-2k" value="65"></td>
+                                  <td><input type="number" id="emisor1-4k" value="54"></td>
+                                </tr>
+                              </table>
                             
-                            <h3>Espectro Emisor 2</h3>
-                            <input type="number" id="emisor2-63" value="75"> 63 Hz
-                            <input type="number" id="emisor2-125" value="75"> 125 Hz
-                            <input type="number" id="emisor2-250" value="65"> 250 Hz
-                            <input type="number" id="emisor2-500" value="60"> 500 Hz
-                            <input type="number" id="emisor2-1k" value="51"> 1k Hz
-                            <input type="number" id="emisor2-2k" value="65"> 2k Hz
-                            <input type="number" id="emisor2-4k" value="54"> 4k Hz
+                              <h2>Espectro Emisor 2</h2>
+                              <table id="tabla-emisor2" border="1">
+                                <tr>
+                                  <th>Frecuencia (Hz)</th>
+                                  <th>63</th>
+                                  <th>125</th>
+                                  <th>250</th>
+                                  <th>500</th>
+                                  <th>1k</th>
+                                  <th>2k</th>
+                                  <th>4k</th>
+                                </tr>
+                                <tr>
+                                  <td>Nivel (dB)</td>
+                                  <td><input type="number" id="emisor2-63" value="75"></td>
+                                  <td><input type="number" id="emisor2-125" value="75"></td>
+                                  <td><input type="number" id="emisor2-250" value="65"></td>
+                                  <td><input type="number" id="emisor2-500" value="60"></td>
+                                  <td><input type="number" id="emisor2-1k" value="51"></td>
+                                  <td><input type="number" id="emisor2-2k" value="65"></td>
+                                  <td><input type="number" id="emisor2-4k" value="54"></td>
+                                </tr>
+                              </table>
+                            
+                              <button onclick="calcular()">Calcular</button>
+                              <div id="resultado"></div>
+                              <script src="script.js"></script>
 
                         </div>
 
