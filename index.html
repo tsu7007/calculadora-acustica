@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Aislamiento Acústico - Google Sheets</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header principal -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1>Calculadora de Aislamiento Acústico</h1>
+                <div class="header-actions">
+                    <button class="btn btn--secondary btn--sm" id="showCodeBtn">Ver Código JS</button>
+                    <button class="btn btn--primary btn--sm" id="calculateBtn">Calcular Todo</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Panel lateral de código -->
+            <div class="code-panel" id="codePanel">
+                <div class="code-panel-header">
+                    <h3>Código Google Apps Script</h3>
+                    <button class="btn btn--sm btn--outline" id="closeCodeBtn">×</button>
+                </div>
+                <div class="code-content">
+                    <pre><code id="codeDisplay"></code></pre>
+                </div>
+            </div>
+
+            <!-- Área principal tipo sheets -->
+            <div class="sheets-container">
+                <!-- Pestañas -->
+                <div class="tabs-container">
+                    <div class="tabs">
+                        <button class="tab active" data-case="caso1">Caso 1: Fachada Compuesta</button>
+                        <button class="tab" data-case="caso2">Caso 2: Pared Compuesta</button>
+                        <button class="tab" data-case="caso3">Caso 3: Personalizado</button>
+                    </div>
+                </div>
+
+                <!-- Contenido de las pestañas -->
+                <div class="tab-content active" id="caso1">
+                    <div class="case-header">
+                        <h2>Aislamiento de Fachada Compuesta</h2>
+                        <p>Cálculo de aislamiento de una fachada compuesta por parte ciega (pared doble) y ventana doble</p>
+                    </div>
+                    
+                    <div class="spreadsheet">
+                        <!-- Datos de entrada -->
+                        <div class="sheet-section">
+                            <h3>Datos de Entrada</h3>
+                            <table class="sheet-table">
+                                <tr>
+                                    <td class="label-cell">Frecuencia (Hz)</td>
+                                    <td><input type="number" class="form-control cell-input" id="c1_frecuencia" value="63"></td>
+                                    <td class="formula-cell">f = 63 Hz</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Coef. Absorción</td>
+                                    <td><input type="number" class="form-control cell-input" id="c1_absorcion" value="0.2" step="0.01"></td>
+                                    <td class="formula-cell">α = 0.2</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Ancho Pared (m)</td>
+                                    <td><input type="number" class="form-control cell-input" id="c1_ancho_pared" value="6" step="0.1"></td>
+                                    <td class="formula-cell">ap = 6 m</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Alto Pared (m)</td>
+                                    <td><input type="number" class="form-control cell-input" id="c1_alto_pared" value="6" step="0.1"></td>
+                                    <td class="formula-cell">hp = 6 m</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Densidad Pared 1 (kg/m²)</td>
+                                    <td><input type="number" class="form-control cell-input" id="c1_densidad1" value="10"></td>
+                                    <td class="formula-cell">M₁ = 10 kg/m²</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Densidad Pared 2 (kg/m²)</td>
+                                    <td><input type="number" class="form-control cell-input" id="c1_densidad2" value="30"></td>
+                                    <td class="formula-cell">M₂ = 30 kg/m²</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Separación (m)</td>
+                                    <td><input type="number" class="form-control cell-input" id="c1_separacion" value="0.1" step="0.01"></td>
+                                    <td class="formula-cell">d = 0.1 m</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Ancho Ventana (m)</td>
+                                    <td><input type="number" class="form-control cell-input" id="c1_ancho_ventana" value="0.5" step="0.1"></td>
+                                    <td class="formula-cell">av = 0.5 m</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Alto Ventana (m)</td>
+                                    <td><input type="number" class="form-control cell-input" id="c1_alto_ventana" value="0.5" step="0.1"></td>
+                                    <td class="formula-cell">hv = 0.5 m</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Densidad Ventana 1 (kg/m²)</td>
+                                    <td><input type="number" class="form-control cell-input" id="c1_densidadv1" value="10"></td>
+                                    <td class="formula-cell">Mv₁ = 10 kg/m²</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Densidad Ventana 2 (kg/m²)</td>
+                                    <td><input type="number" class="form-control cell-input" id="c1_densidadv2" value="30"></td>
+                                    <td class="formula-cell">Mv₂ = 30 kg/m²</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Cálculos intermedios -->
+                        <div class="sheet-section">
+                            <h3>Cálculos Intermedios</h3>
+                            <table class="sheet-table">
+                                <tr>
+                                    <td class="label-cell">R₁ (Pared)</td>
+                                    <td class="result-cell" id="c1_r1">-</td>
+                                    <td class="formula-cell">R₁ = 20 log M₁ + 20 log f - 43</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">R₂ (Pared)</td>
+                                    <td class="result-cell" id="c1_r2">-</td>
+                                    <td class="formula-cell">R₂ = 20 log M₂ + 20 log f - 43</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">fo (Pared)</td>
+                                    <td class="result-cell" id="c1_fo">-</td>
+                                    <td class="formula-cell">fo = 60 × √[(1/M₁ + 1/M₂)/d]</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">R Pared Doble</td>
+                                    <td class="result-cell" id="c1_r_pared_doble">-</td>
+                                    <td class="formula-cell">R = R₁ + R₂ - 10 log(fo/f)</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">R Ventana Doble</td>
+                                    <td class="result-cell" id="c1_r_ventana_doble">-</td>
+                                    <td class="formula-cell">Similar a pared doble</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Área Pared (m²)</td>
+                                    <td class="result-cell" id="c1_area_pared">-</td>
+                                    <td class="formula-cell">Sp = ap × hp - av × hv</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Área Ventana (m²)</td>
+                                    <td class="result-cell" id="c1_area_ventana">-</td>
+                                    <td class="formula-cell">Sv = av × hv</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">R Global</td>
+                                    <td class="result-cell" id="c1_r_global">-</td>
+                                    <td class="formula-cell">Rg = 10 log [Stotal / (Sp•10^(-Rp/10) + Sv•10^(-Rv/10))]</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Resultado final -->
+                        <div class="sheet-section">
+                            <h3>Resultado Final</h3>
+                            <table class="sheet-table">
+                                <tr>
+                                    <td class="label-cell final-label">R Efectivo (dB)</td>
+                                    <td class="final-result" id="c1_resultado_final">-</td>
+                                    <td class="formula-cell">R_efectivo = R_global - 10 log(1 - α)</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="caso2">
+                    <div class="case-header">
+                        <h2>Aislamiento Total de Pared Compuesta</h2>
+                        <p>Cálculo de aislamiento total de una pared compuesta con puerta según espectros de emisión</p>
+                    </div>
+                    
+                    <div class="spreadsheet">
+                        <!-- Datos de entrada -->
+                        <div class="sheet-section">
+                            <h3>Datos de Entrada</h3>
+                            <table class="sheet-table">
+                                <tr>
+                                    <td class="label-cell">Ancho Pared (m)</td>
+                                    <td><input type="number" class="form-control cell-input" id="c2_ancho_pared" value="10" step="0.1"></td>
+                                    <td class="formula-cell">ap = 10 m</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Alto Pared (m)</td>
+                                    <td><input type="number" class="form-control cell-input" id="c2_alto_pared" value="4" step="0.1"></td>
+                                    <td class="formula-cell">hp = 4 m</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Espesor Pared (m)</td>
+                                    <td><input type="number" class="form-control cell-input" id="c2_espesor_pared" value="0.1" step="0.01"></td>
+                                    <td class="formula-cell">ep = 0.1 m</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Densidad Pared (kg/m³)</td>
+                                    <td><input type="number" class="form-control cell-input" id="c2_densidad_pared" value="2000"></td>
+                                    <td class="formula-cell">ρp = 2000 kg/m³</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Ancho Puerta (m)</td>
+                                    <td><input type="number" class="form-control cell-input" id="c2_ancho_puerta" value="3" step="0.1"></td>
+                                    <td class="formula-cell">apt = 3 m</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Alto Puerta (m)</td>
+                                    <td><input type="number" class="form-control cell-input" id="c2_alto_puerta" value="1.66" step="0.01"></td>
+                                    <td class="formula-cell">hpt = 1.66 m</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Espesor Puerta (m)</td>
+                                    <td><input type="number" class="form-control cell-input" id="c2_espesor_puerta" value="0.1" step="0.01"></td>
+                                    <td class="formula-cell">ept = 0.1 m</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Densidad Puerta (kg/m³)</td>
+                                    <td><input type="number" class="form-control cell-input" id="c2_densidad_puerta" value="100"></td>
+                                    <td class="formula-cell">ρpt = 100 kg/m³</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Espectro Emisor</td>
+                                    <td>
+                                        <select class="form-control" id="c2_espectro">
+                                            <option value="1">Emisor 1</option>
+                                            <option value="2">Emisor 2</option>
+                                        </select>
+                                    </td>
+                                    <td class="formula-cell">Seleccionar tipo de fuente</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Tabla de resultados por frecuencia -->
+                        <div class="sheet-section">
+                            <h3>Análisis por Frecuencia</h3>
+                            <table class="sheet-table frequency-table">
+                                <thead>
+                                    <tr>
+                                        <th>Freq (Hz)</th>
+                                        <th>R Pared (dB)</th>
+                                        <th>R Puerta (dB)</th>
+                                        <th>R Global (dB)</th>
+                                        <th>Nivel Emisor (dB)</th>
+                                        <th>Nivel Receptor (dB)</th>
+                                        <th>Pond. A (dB)</th>
+                                        <th>Nivel Receptor A (dB)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="c2_frequency_table">
+                                    <!-- Se llenará dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Resultado final -->
+                        <div class="sheet-section">
+                            <h3>Resultado Final</h3>
+                            <table class="sheet-table">
+                                <tr>
+                                    <td class="label-cell final-label">Nivel Global Ponderado A (dBA)</td>
+                                    <td class="final-result" id="c2_resultado_final">-</td>
+                                    <td class="formula-cell">LAeq = 10 log Σ(10^(LAi/10))</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="caso3">
+                    <div class="case-header">
+                        <h2>Caso Personalizado</h2>
+                        <p>Añadir o eliminar elementos como ventanas, puertas, paredes para análisis personalizado</p>
+                    </div>
+                    
+                    <div class="spreadsheet">
+                        <!-- Controles para añadir elementos -->
+                        <div class="sheet-section">
+                            <h3>Configuración de Elementos</h3>
+                            <div class="element-controls">
+                                <div class="control-group">
+                                    <select class="form-control" id="c3_tipo_elemento">
+                                        <option value="pared_simple">Pared Simple</option>
+                                        <option value="pared_doble">Pared Doble</option>
+                                        <option value="ventana">Ventana</option>
+                                        <option value="puerta">Puerta</option>
+                                    </select>
+                                    <button class="btn btn--primary btn--sm" id="c3_add_element">Añadir Elemento</button>
+                                </div>
+                                <div class="control-group">
+                                    <label class="form-label">Coef. Absorción Global:</label>
+                                    <input type="number" class="form-control" id="c3_absorcion_global" value="0.2" step="0.01">
+                                </div>
+                            </div>
+                            
+                            <!-- Lista de elementos -->
+                            <div class="elements-list">
+                                <table class="sheet-table" id="c3_elements_table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tipo</th>
+                                            <th>Ancho (m)</th>
+                                            <th>Alto (m)</th>
+                                            <th>Densidad 1 (kg/m²)</th>
+                                            <th>Densidad 2 (kg/m²)</th>
+                                            <th>Separación (m)</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Se llenará dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Análisis por frecuencia -->
+                        <div class="sheet-section">
+                            <h3>Análisis por Frecuencia</h3>
+                            <div class="frequency-controls">
+                                <label class="form-label">Frecuencias de análisis (Hz):</label>
+                                <input type="text" class="form-control" id="c3_frecuencias" value="63,125,250,500,1000,2000,4000" placeholder="Separar con comas">
+                                <button class="btn btn--secondary btn--sm" id="c3_calculate">Calcular</button>
+                            </div>
+                            
+                            <table class="sheet-table frequency-table">
+                                <thead>
+                                    <tr>
+                                        <th>Frecuencia (Hz)</th>
+                                        <th>Aislamiento Global (dB)</th>
+                                        <th>Aislamiento Efectivo (dB)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="c3_results_table">
+                                    <!-- Se llenará dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
