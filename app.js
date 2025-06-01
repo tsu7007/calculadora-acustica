@@ -576,71 +576,79 @@ function debounce(func, wait) {
 function calcularNivelGlobalPonderadoA(espectro, aislamientoGlobal) {
   let sumaEnergia = 0;
   
-  // Valores fijos de ponderación A (norma UNE-EN ISO 61672-1)
-  const ponderacionA = {
-    '63': -26,
-    '125': -16,
-    '250': -9,
-    '500': -3,
-    '1k': 0,
-    '2k': 1,
-    '4k': 1
-  };
+// script.js
+const PONDERACION_A = {
+  '63': -26,
+  '125': -16,
+  '250': -9,
+  '500': -3,
+  '1k': 0,
+  '2k': 1,
+  '4k': 1
+};
 
-  // Validación de datos numéricos
-  const frecuencias = ['63', '125', '250', '500', '1k', '2k', '4k'];
-  for (const freq of frecuencias) {
-    const nivelEmisor = parseFloat(espectro[freq]);
-    const aislamiento = parseFloat(aislamientoGlobal[freq]);
-    
-    if (isNaN(nivelEmisor) || isNaN(aislamiento)) {
-      throw new Error(`Valores inválidos en frecuencia ${freq} Hz`);
-    }
-
-    // Cálculo del nivel receptor ponderado A
-    const nivelReceptor = nivelEmisor - aislamiento;
-    const nivelPonderadoA = nivelReceptor + ponderacionA[freq];
-    
-    // Conversión a escala lineal (energía)
-    sumaEnergia += Math.pow(10, nivelPonderadoA / 10);
-  }
-
-  // Cálculo final en dBA
-  const nivelGlobal = 10 * Math.log10(sumaEnergia);
-  return nivelGlobal.toFixed(1);
-}
-
-
-
-
-// Obtener espectro desde inputs
-function obtenerEspectro(id) {
-  return {
-    63: parseFloat(document.getElementById(id + '-63').value),
-    125: parseFloat(document.getElementById(id + '-125').value),
-    250: parseFloat(document.getElementById(id + '-250').value),
-    500: parseFloat(document.getElementById(id + '-500').value),
-    1000: parseFloat(document.getElementById(id + '-1000').value),
-    2000: parseFloat(document.getElementById(id + '-2000').value),
-    4000: parseFloat(document.getElementById(id + '-4000').value)
-  };
-}
-
-function mostrarResultado() {
+function calcularNivelGlobal() {
   try {
-    const espectro = obtenerEspectroDesdeFormulario();
-    const aislamiento = obtenerAislamientoGlobalCalculado(); 
-    const dBA = calcularNivelGlobalPonderadoA(espectro, aislamiento);
-    
-    document.getElementById('resultado').innerHTML = `
-      <strong>Nivel Global Ponderado A:</strong> ${dBA} dBA
-    `;
+    const emisor1 = obtenerEspectro('emisor1');
+    const emisor2 = obtenerEspectro('emisor2');
+    const aislamiento = obtenerAislamientoGlobal();
+
+    const dBA1 = calcularNivelPonderadoA(emisor1, aislamiento);
+    const dBA2 = calcularNivelPonderadoA(emisor2, aislamiento);
+
+    mostrarResultado(dBA1, dBA2);
   } catch (error) {
+    console.error(error);
     document.getElementById('resultado').innerHTML = `
       <div class="error">⚠️ Error: ${error.message}</div>
     `;
   }
 }
+
+function obtenerEspectro(emisor) {
+  const frecuencias = ['63', '125', '250', '500', '1k', '2k', '4k'];
+  const espectro = {};
+  
+  frecuencias.forEach(freq => {
+    const valor = parseFloat(document.getElementById(`${emisor}-${freq}`).value);
+    if (isNaN(valor)) throw new Error(`Valor inválido en ${emisor} - ${freq} Hz`);
+    espectro[freq] = valor;
+  });
+  
+  return espectro;
+}
+
+function obtenerAislamientoGlobal() {
+  // Implementa aquí la lógica para obtener R_global de tu hoja de cálculo
+  return {
+    '63': 19.8, '125': 25.1, '250': 30.6, '500': 36.2, '1k': 41.9, '2k': 47.7, '4k': 53.6
+  };
+}
+
+function calcularNivelPonderadoA(emisor, aislamiento) {
+  let sumaEnergia = 0;
+  const frecuencias = Object.keys(emisor);
+
+  frecuencias.forEach(freq => {
+    const nivelReceptor = emisor[freq] - aislamiento[freq];
+    const nivelPonderadoA = nivelReceptor + PONDERACION_A[freq];
+    sumaEnergia += Math.pow(10, nivelPonderadoA / 10); // Conversión a energía
+  });
+
+  const nivelGlobal = 10 * Math.log10(sumaEnergia); // Conversión a dB
+  return nivelGlobal.toFixed(1); // Redondeo a 1 decimal
+}
+
+function mostrarResultado(dBA1, dBA2) {
+  document.getElementById('resultado').innerHTML = `
+    <div class="resultado">
+      <h3>Resultados:</h3>
+      <p>Espectro Emisor 1: <strong>${dBA1} dBA</strong></p>
+      <p>Espectro Emisor 2: <strong>${dBA2} dBA</strong></p>
+    </div>
+  `;
+}
+
 
 
 
