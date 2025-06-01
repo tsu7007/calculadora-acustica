@@ -257,6 +257,43 @@
                                     <!-- Se llenará dinámicamente -->
                                 </tbody>
                             </table>
+                            <!-- index.html -->
+                            <table>
+                              <tr>
+                                <th>Frecuencia (Hz)</th>
+                                <th>63</th>
+                                <th>125</th>
+                                <th>250</th>
+                                <th>500</th>
+                                <th>1k</th>
+                                <th>2k</th>
+                                <th>4k</th>
+                              </tr>
+                              <tr>
+                                <td>Emisor 1 (dB)</td>
+                                <td><input type="number" id="emisor1-63" value="70"></td>
+                                <td><input type="number" id="emisor1-125" value="80"></td>
+                                <td><input type="number" id="emisor1-250" value="65"></td>
+                                <td><input type="number" id="emisor1-500" value="60"></td>
+                                <td><input type="number" id="emisor1-1k" value="51"></td>
+                                <td><input type="number" id="emisor1-2k" value="65"></td>
+                                <td><input type="number" id="emisor1-4k" value="54"></td>
+                              </tr>
+                              <tr>
+                                <td>Emisor 2 (dB)</td>
+                                <td><input type="number" id="emisor2-63" value="75"></td>
+                                <td><input type="number" id="emisor2-125" value="75"></td>
+                                <td><input type="number" id="emisor2-250" value="64"></td>
+                                <td><input type="number" id="emisor2-500" value="58"></td>
+                                <td><input type="number" id="emisor2-1k" value="52"></td>
+                                <td><input type="number" id="emisor2-2k" value="51"></td>
+                                <td><input type="number" id="emisor2-4k" value="60"></td>
+                              </tr>
+                            </table>
+                            
+                            <button onclick="calcularNivelGlobal()">Calcular</button>
+                            <div id="resultado"></div>
+
                         </div>
 
                         <!-- Resultado final -->
