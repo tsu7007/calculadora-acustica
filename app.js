@@ -601,15 +601,16 @@ function calcularAislamiento() {
 // Obtener espectro desde inputs
 function obtenerEspectro(id) {
   return {
-    63: parseFloat(document.getElementById(`${id}-63`).value),
-    125: parseFloat(document.getElementById(`${id}-125`).value),
-    250: parseFloat(document.getElementById(`${id}-250`).value),
-    500: parseFloat(document.getElementById(`${id}-500`).value),
-    1000: parseFloat(document.getElementById(`${id}-1000`).value),
-    2000: parseFloat(document.getElementById(`${id}-2000`).value),
-    4000: parseFloat(document.getElementById(`${id}-4000`).value)
+    63: parseFloat(document.getElementById(id + '-63').value),
+    125: parseFloat(document.getElementById(id + '-125').value),
+    250: parseFloat(document.getElementById(id + '-250').value),
+    500: parseFloat(document.getElementById(id + '-500').value),
+    1000: parseFloat(document.getElementById(id + '-1000').value),
+    2000: parseFloat(document.getElementById(id + '-2000').value),
+    4000: parseFloat(document.getElementById(id + '-4000').value)
   };
 }
+
 
 // Cálculo detallado con fórmulas visibles
 function calcularNivelGlobal(espectro) {
