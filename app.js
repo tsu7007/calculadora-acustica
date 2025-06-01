@@ -572,31 +572,6 @@ function debounce(func, wait) {
     };
 }
 
-// En script.js
-// Datos FIJOS de ponderación A (según norma UNE-EN ISO 61672-1)
-const PONDERACION_A = {
-  63: -26,
-  125: -16,
-  250: -9,
-  500: -3,
-  1000: 0,
-  2000: 1,
-  4000: 1
-};
-
-// Función principal de cálculo
-function calcularAislamiento() {
-  // Obtener valores de entrada del usuario
-  const emisor1 = obtenerEspectro('emisor1');
-  const emisor2 = obtenerEspectro('emisor2');
-  
-  // Realizar cálculos con los valores variables
-  const resultado1 = calcularNivelGlobal(emisor1);
-  const resultado2 = calcularNivelGlobal(emisor2);
-
-  // Mostrar resultados con formato detallado
-  mostrarResultados(emisor1, resultado1, emisor2, resultado2);
-}
 
 // Obtener espectro desde inputs
 function obtenerEspectro(id) {
@@ -611,59 +586,6 @@ function obtenerEspectro(id) {
   };
 }
 
-
-// Cálculo detallado con fórmulas visibles
-function calcularNivelGlobal(espectro) {
-  let suma = 0;
-  let formula = 'Fórmula aplicada: L = 10 log(';
-  
-  Object.entries(espectro).forEach(([freq, valor]) => {
-    const ponderado = valor + PONDERACION_A[freq];
-    suma += Math.pow(10, ponderado/10);
-    formula += `10^(${valor}${PONDERACION_A[freq]} dB/10) + `;
-  });
-
-  formula = formula.slice(0, -3) + ')';
-  const resultado = 10 * Math.log10(suma);
-  
-  return {formula, resultado: resultado.toFixed(2)};
-}
-
-// Mostrar resultados con formato detallado
-function mostrarResultados(emisor1, res1, emisor2, res2) {
-  const resultadosHTML = `
-    <div class="resultado">
-      <h3>Espectro Emisor 1</h3>
-      ${generarTablaEspectro(emisor1)}
-      <p>${res1.formula}</p>
-      <p class="total">Resultado: ${res1.resultado} dBA</p>
-    </div>
-    <div class="resultado">
-      <h3>Espectro Emisor 2</h3>
-      ${generarTablaEspectro(emisor2)}
-      <p>${res2.formula}</p>
-      <p class="total">Resultado: ${res2.resultado} dBA</p>
-    </div>
-  `;
-  
-  document.getElementById('resultados').innerHTML = resultadosHTML;
-}
-
-// Generar tabla de espectro con inputs editables
-function generarTablaEspectro(espectro) {
-  return `
-    <table class="espectro">
-      <tr>
-        ${Object.keys(espectro).map(f => `<th>${f} Hz</th>`).join('')}
-      </tr>
-      <tr>
-        ${Object.values(espectro).map(v => `
-          <td><input type="number" value="${v}" step="0.1"></td>
-        `).join('')}
-      </tr>
-    </table>
-  `;
-}
 
 
 
