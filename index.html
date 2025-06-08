@@ -1,389 +1,478 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Aislamiento Acústico - Google Sheets</title>
+    <title data-i18n="app.title">Calculateur d'Assemblages Bois - Eurocode 5</title>
+    <meta name="description" data-i18n="app.description" content="Calculateur professionnel pour les assemblages de structures bois selon l'Eurocode 5 (EN 1995-1-1)">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
-        <!-- Header principal -->
+        <!-- Header with Language Switcher -->
         <header class="app-header">
-            <div class="header-content">
-                <h1>Calculadora de Aislamiento Acústico</h1>
-                <div class="header-actions">
-                    <button class="btn btn--secondary btn--sm" id="showCodeBtn">Ver Código JS</button>
-                    <button class="btn btn--primary btn--sm" id="calculateBtn">Calcular Todo</button>
+            <div class="container flex justify-between items-center">
+                <div>
+                    <h1 data-i18n="app.title">Calculateur d'Assemblages Bois - Eurocode 5</h1>
+                    <p class="header-subtitle" data-i18n="app.subtitle">Calculs professionnels selon EN 1995-1-1</p>
+                </div>
+                <div class="language-switcher">
+                    <div class="language-dropdown">
+                        <button class="language-btn" id="currentLanguage">
+                            <span class="flag-icon">🇫🇷</span>
+                            <span>Français</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="language-menu" id="languageMenu">
+                            <button class="language-option" data-lang="fr">
+                                <span class="flag-icon">🇫🇷</span>
+                                <span>Français</span>
+                            </button>
+                            <button class="language-option" data-lang="en">
+                                <span class="flag-icon">🇬🇧</span>
+                                <span>English</span>
+                            </button>
+                            <button class="language-option" data-lang="es">
+                                <span class="flag-icon">🇪🇸</span>
+                                <span>Español</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
 
-        <div class="main-content">
-            <!-- Panel lateral de código -->
-            <div class="code-panel" id="codePanel">
-                <div class="code-panel-header">
-                    <h3>Código Google Apps Script</h3>
-                    <button class="btn btn--sm btn--outline" id="closeCodeBtn">×</button>
-                </div>
-                <div class="code-content">
-                    <pre><code id="codeDisplay"></code></pre>
+        <!-- Navigation Tabs -->
+        <nav class="tab-navigation">
+            <div class="container">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="screws" data-i18n="tabs.screws">Tirefonds</button>
+                    <button class="tab-btn" data-tab="nails" data-i18n="tabs.nails">Pointes</button>
+                    <button class="tab-btn" data-tab="bolts" data-i18n="tabs.bolts">Boulons</button>
+                    <button class="tab-btn" data-tab="summary" data-i18n="tabs.summary">Résumé</button>
                 </div>
             </div>
+        </nav>
 
-            <!-- Área principal tipo sheets -->
-            <div class="sheets-container">
-                <!-- Pestañas -->
-                <div class="tabs-container">
-                    <div class="tabs">
-                        <button class="tab active" data-case="caso1">Caso 1: Fachada Compuesta</button>
-                        <button class="tab" data-case="caso2">Caso 2: Pared Compuesta</button>
-                        <button class="tab" data-case="caso3">Caso 3: Personalizado</button>
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container">
+                <!-- Project Management -->
+                <div class="project-controls mb-24">
+                    <div class="flex gap-16">
+                        <button class="btn btn--secondary btn--sm" id="saveProject" data-i18n="buttons.save">Sauvegarder</button>
+                        <button class="btn btn--secondary btn--sm" id="loadProject" data-i18n="buttons.load">Charger</button>
+                        <button class="btn btn--outline btn--sm" id="exportReport" data-i18n="buttons.export">Exporter</button>
                     </div>
                 </div>
 
-                <!-- Contenido de las pestañas -->
-                <div class="tab-content active" id="caso1">
-                    <div class="case-header">
-                        <h2>Aislamiento de Fachada Compuesta</h2>
-                        <p>Cálculo de aislamiento de una fachada compuesta por parte ciega (pared doble) y ventana doble</p>
-                    </div>
-                    
-                    <div class="spreadsheet">
-                        <!-- Datos de entrada -->
-                        <div class="sheet-section">
-                            <h3>Datos de Entrada</h3>
-                            <table class="sheet-table">
-                                <tr>
-                                    <td class="label-cell">Frecuencia (Hz)</td>
-                                    <td><input type="number" class="form-control cell-input" id="c1_frecuencia" value="63"></td>
-                                    <td class="formula-cell">f = 63 Hz</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Coef. Absorción</td>
-                                    <td><input type="number" class="form-control cell-input" id="c1_absorcion" value="0.2" step="0.01"></td>
-                                    <td class="formula-cell">α = 0.2</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Ancho Pared (m)</td>
-                                    <td><input type="number" class="form-control cell-input" id="c1_ancho_pared" value="6" step="0.1"></td>
-                                    <td class="formula-cell">ap = 6 m</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Alto Pared (m)</td>
-                                    <td><input type="number" class="form-control cell-input" id="c1_alto_pared" value="6" step="0.1"></td>
-                                    <td class="formula-cell">hp = 6 m</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Densidad Pared 1 (kg/m²)</td>
-                                    <td><input type="number" class="form-control cell-input" id="c1_densidad1" value="10"></td>
-                                    <td class="formula-cell">M₁ = 10 kg/m²</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Densidad Pared 2 (kg/m²)</td>
-                                    <td><input type="number" class="form-control cell-input" id="c1_densidad2" value="30"></td>
-                                    <td class="formula-cell">M₂ = 30 kg/m²</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Separación (m)</td>
-                                    <td><input type="number" class="form-control cell-input" id="c1_separacion" value="0.1" step="0.01"></td>
-                                    <td class="formula-cell">d = 0.1 m</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Ancho Ventana (m)</td>
-                                    <td><input type="number" class="form-control cell-input" id="c1_ancho_ventana" value="0.5" step="0.1"></td>
-                                    <td class="formula-cell">av = 0.5 m</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Alto Ventana (m)</td>
-                                    <td><input type="number" class="form-control cell-input" id="c1_alto_ventana" value="0.5" step="0.1"></td>
-                                    <td class="formula-cell">hv = 0.5 m</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Densidad Ventana 1 (kg/m²)</td>
-                                    <td><input type="number" class="form-control cell-input" id="c1_densidadv1" value="10"></td>
-                                    <td class="formula-cell">Mv₁ = 10 kg/m²</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Densidad Ventana 2 (kg/m²)</td>
-                                    <td><input type="number" class="form-control cell-input" id="c1_densidadv2" value="30"></td>
-                                    <td class="formula-cell">Mv₂ = 30 kg/m²</td>
-                                </tr>
-                            </table>
-                        </div>
-
-                        <!-- Cálculos intermedios -->
-                        <div class="sheet-section">
-                            <h3>Cálculos Intermedios</h3>
-                            <table class="sheet-table">
-                                <tr>
-                                    <td class="label-cell">R₁ (Pared)</td>
-                                    <td class="result-cell" id="c1_r1">-</td>
-                                    <td class="formula-cell">R₁ = 20 log M₁ + 20 log f - 43</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">R₂ (Pared)</td>
-                                    <td class="result-cell" id="c1_r2">-</td>
-                                    <td class="formula-cell">R₂ = 20 log M₂ + 20 log f - 43</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">fo (Pared)</td>
-                                    <td class="result-cell" id="c1_fo">-</td>
-                                    <td class="formula-cell">fo = 60 × √[(1/M₁ + 1/M₂)/d]</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">R Pared Doble</td>
-                                    <td class="result-cell" id="c1_r_pared_doble">-</td>
-                                    <td class="formula-cell">R = R₁ + R₂ - 10 log(fo/f)</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">R Ventana Doble</td>
-                                    <td class="result-cell" id="c1_r_ventana_doble">-</td>
-                                    <td class="formula-cell">Similar a pared doble</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Área Pared (m²)</td>
-                                    <td class="result-cell" id="c1_area_pared">-</td>
-                                    <td class="formula-cell">Sp = ap × hp - av × hv</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Área Ventana (m²)</td>
-                                    <td class="result-cell" id="c1_area_ventana">-</td>
-                                    <td class="formula-cell">Sv = av × hv</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">R Global</td>
-                                    <td class="result-cell" id="c1_r_global">-</td>
-                                    <td class="formula-cell">Rg = 10 log [Stotal / (Sp•10^(-Rp/10) + Sv•10^(-Rv/10))]</td>
-                                </tr>
-                            </table>
-                        </div>
-
-                        <!-- Resultado final -->
-                        <div class="sheet-section">
-                            <h3>Resultado Final</h3>
-                            <table class="sheet-table">
-                                <tr>
-                                    <td class="label-cell final-label">R Efectivo (dB)</td>
-                                    <td class="final-result" id="c1_resultado_final">-</td>
-                                    <td class="formula-cell">R_efectivo = R_global - 10 log(1 - α)</td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="tab-content" id="caso2">
-                    <div class="case-header">
-                        <h2>Aislamiento Total de Pared Compuesta</h2>
-                        <p>Cálculo de aislamiento total de una pared compuesta con puerta según espectros de emisión</p>
-                    </div>
-                    
-                    <div class="spreadsheet">
-                        <!-- Datos de entrada -->
-                        <div class="sheet-section">
-                            <h3>Datos de Entrada</h3>
-                            <table class="sheet-table">
-                                <tr>
-                                    <td class="label-cell">Ancho Pared (m)</td>
-                                    <td><input type="number" class="form-control cell-input" id="c2_ancho_pared" value="10" step="0.1"></td>
-                                    <td class="formula-cell">ap = 10 m</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Alto Pared (m)</td>
-                                    <td><input type="number" class="form-control cell-input" id="c2_alto_pared" value="4" step="0.1"></td>
-                                    <td class="formula-cell">hp = 4 m</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Espesor Pared (m)</td>
-                                    <td><input type="number" class="form-control cell-input" id="c2_espesor_pared" value="0.1" step="0.01"></td>
-                                    <td class="formula-cell">ep = 0.1 m</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Densidad Pared (kg/m³)</td>
-                                    <td><input type="number" class="form-control cell-input" id="c2_densidad_pared" value="2000"></td>
-                                    <td class="formula-cell">ρp = 2000 kg/m³</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Ancho Puerta (m)</td>
-                                    <td><input type="number" class="form-control cell-input" id="c2_ancho_puerta" value="3" step="0.1"></td>
-                                    <td class="formula-cell">apt = 3 m</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Alto Puerta (m)</td>
-                                    <td><input type="number" class="form-control cell-input" id="c2_alto_puerta" value="1.66" step="0.01"></td>
-                                    <td class="formula-cell">hpt = 1.66 m</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Espesor Puerta (m)</td>
-                                    <td><input type="number" class="form-control cell-input" id="c2_espesor_puerta" value="0.1" step="0.01"></td>
-                                    <td class="formula-cell">ept = 0.1 m</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Densidad Puerta (kg/m³)</td>
-                                    <td><input type="number" class="form-control cell-input" id="c2_densidad_puerta" value="100"></td>
-                                    <td class="formula-cell">ρpt = 100 kg/m³</td>
-                                </tr>
-                                <tr>
-                                    <td class="label-cell">Espectro Emisor</td>
-                                    <td>
-                                        <select class="form-control" id="c2_espectro">
-                                            <option value="1">Emisor 1</option>
-                                            <option value="2">Emisor 2</option>
+                <!-- Screws Tab -->
+                <div class="tab-content active" id="screws-tab">
+                    <div class="calculation-grid">
+                        <!-- Input Section -->
+                        <div class="input-section">
+                            <div class="card">
+                                <div class="card__body">
+                                    <h3 data-i18n="screws.title">Calcul Tirefonds/Vis</h3>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="common.wood_class">Classe de bois</label>
+                                        <select class="form-control" id="screwWoodClass">
+                                            <option value="C14">C14</option>
+                                            <option value="C16">C16</option>
+                                            <option value="C18">C18</option>
+                                            <option value="C22">C22</option>
+                                            <option value="C24" selected>C24</option>
+                                            <option value="C27">C27</option>
+                                            <option value="GL20">GL20</option>
+                                            <option value="GL22">GL22</option>
+                                            <option value="GL24">GL24</option>
+                                            <option value="GL24h">GL24h</option>
                                         </select>
-                                    </td>
-                                    <td class="formula-cell">Seleccionar tipo de fuente</td>
-                                </tr>
-                            </table>
-                             <!-- index.html -->
-                            <table>
-                              <tr>
-                                <th>Frecuencia (Hz)</th>
-                                <th>63</th>
-                                <th>125</th>
-                                <th>250</th>
-                                <th>500</th>
-                                <th>1k</th>
-                                <th>2k</th>
-                                <th>4k</th>
-                              </tr>
-                              <tr>
-                                <td>Emisor 1 (dB)</td>
-                                <td><input type="number" id="emisor1-63" value="70"></td>
-                                <td><input type="number" id="emisor1-125" value="80"></td>
-                                <td><input type="number" id="emisor1-250" value="65"></td>
-                                <td><input type="number" id="emisor1-500" value="60"></td>
-                                <td><input type="number" id="emisor1-1k" value="51"></td>
-                                <td><input type="number" id="emisor1-2k" value="65"></td>
-                                <td><input type="number" id="emisor1-4k" value="54"></td>
-                              </tr>
-                              <tr>
-                                <td>Emisor 2 (dB)</td>
-                                <td><input type="number" id="emisor2-63" value="75"></td>
-                                <td><input type="number" id="emisor2-125" value="75"></td>
-                                <td><input type="number" id="emisor2-250" value="64"></td>
-                                <td><input type="number" id="emisor2-500" value="58"></td>
-                                <td><input type="number" id="emisor2-1k" value="52"></td>
-                                <td><input type="number" id="emisor2-2k" value="51"></td>
-                                <td><input type="number" id="emisor2-4k" value="60"></td>
-                              </tr>
-                            </table>
-                            
-                            <button onclick="calcularNivelGlobal()">Calcular</button>
-                            <div id="resultado"></div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="common.diameter">Diamètre (mm)</label>
+                                        <input type="number" class="form-control" id="screwDiameter" value="8" step="0.1" min="4" max="30">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="common.length">Longueur (mm)</label>
+                                        <input type="number" class="form-control" id="screwLength" value="120" step="1" min="20" max="500">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="common.angle">Angle d'inclinaison (°)</label>
+                                        <input type="number" class="form-control" id="screwAngle" value="90" step="1" min="30" max="90">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="common.force">Force appliquée (kN)</label>
+                                        <input type="number" class="form-control" id="screwForce" value="2.5" step="0.1" min="0">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="common.service_class">Classe de service</label>
+                                        <select class="form-control" id="screwServiceClass">
+                                            <option value="1" selected data-i18n="service_class.class1">Classe 1 (Humidité ≤ 20%)</option>
+                                            <option value="2" data-i18n="service_class.class2">Classe 2 (Humidité ≤ 20%)</option>
+                                            <option value="3" data-i18n="service_class.class3">Classe 3 (Humidité > 20%)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="common.load_duration">Durée de charge</label>
+                                        <select class="form-control" id="screwLoadDuration">
+                                            <option value="permanent" data-i18n="load_duration.permanent">Permanente</option>
+                                            <option value="long_term" data-i18n="load_duration.long_term">Long terme</option>
+                                            <option value="medium_term" selected data-i18n="load_duration.medium_term">Moyen terme</option>
+                                            <option value="short_term" data-i18n="load_duration.short_term">Court terme</option>
+                                            <option value="instantaneous" data-i18n="load_duration.instantaneous">Instantanée</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Tabla de resultados por frecuencia -->
-                        <div class="sheet-section">
-                            <h3>Análisis por Frecuencia</h3>
-                            <table class="sheet-table frequency-table">
-                                <thead>
-                                    <tr>
-                                        <th>Freq (Hz)</th>
-                                        <th>R Pared (dB)</th>
-                                        <th>R Puerta (dB)</th>
-                                        <th>R Global (dB)</th>
-                                        <th>Nivel Emisor (dB)</th>
-                                        <th>Nivel Receptor (dB)</th>
-                                        <th>Pond. A (dB)</th>
-                                        <th>Nivel Receptor A (dB)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="c2_frequency_table">
-                                    <!-- Se llenará dinámicamente -->
-                                </tbody>
-                            </table>
-                           
-
-                        </div>
-
-                        <!-- Resultado final -->
-                        <div class="sheet-section">
-                            <h3>Resultado Final</h3>
-                            <table class="sheet-table">
-                                <tr>
-                                    <td class="label-cell final-label">Nivel Global Ponderado A (dBA)</td>
-                                    <td class="final-result" id="c2_resultado_final">-</td>
-                                    <td class="formula-cell">LAeq = 10 log Σ(10^(LAi/10))</td>
-                                </tr>
-                            </table>
+                        <!-- Results Section -->
+                        <div class="results-section">
+                            <div class="card">
+                                <div class="card__body">
+                                    <h3 data-i18n="results.title">Résultats</h3>
+                                    
+                                    <div class="result-item">
+                                        <label data-i18n="results.bearing_strength">Résistance en pression diamétrale:</label>
+                                        <span id="screwBearingResult">--</span>
+                                        <span class="unit">N/mm²</span>
+                                    </div>
+                                    
+                                    <div class="result-item">
+                                        <label data-i18n="results.withdrawal_capacity">Capacité d'arrachement:</label>
+                                        <span id="screwWithdrawalResult">--</span>
+                                        <span class="unit">kN</span>
+                                    </div>
+                                    
+                                    <div class="result-item">
+                                        <label data-i18n="results.rope_effect">Effet de corde:</label>
+                                        <span id="screwRopeResult">--</span>
+                                        <span class="unit">kN</span>
+                                    </div>
+                                    
+                                    <div class="result-item">
+                                        <label data-i18n="results.total_resistance">Résistance totale:</label>
+                                        <span id="screwTotalResult">--</span>
+                                        <span class="unit">kN</span>
+                                    </div>
+                                    
+                                    <div class="result-item">
+                                        <label data-i18n="results.utilization">Taux d'utilisation:</label>
+                                        <span id="screwUtilizationResult">--</span>
+                                        <span class="unit">%</span>
+                                    </div>
+                                    
+                                    <div class="compliance-status">
+                                        <span class="status" id="screwComplianceStatus" data-i18n="status.pending">En attente...</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="tab-content" id="caso3">
-                    <div class="case-header">
-                        <h2>Caso Personalizado</h2>
-                        <p>Añadir o eliminar elementos como ventanas, puertas, paredes para análisis personalizado</p>
-                    </div>
-                    
-                    <div class="spreadsheet">
-                        <!-- Controles para añadir elementos -->
-                        <div class="sheet-section">
-                            <h3>Configuración de Elementos</h3>
-                            <div class="element-controls">
-                                <div class="control-group">
-                                    <select class="form-control" id="c3_tipo_elemento">
-                                        <option value="pared_simple">Pared Simple</option>
-                                        <option value="pared_doble">Pared Doble</option>
-                                        <option value="ventana">Ventana</option>
-                                        <option value="puerta">Puerta</option>
-                                    </select>
-                                    <button class="btn btn--primary btn--sm" id="c3_add_element">Añadir Elemento</button>
+                <!-- Nails Tab -->
+                <div class="tab-content" id="nails-tab">
+                    <div class="calculation-grid">
+                        <!-- Input Section -->
+                        <div class="input-section">
+                            <div class="card">
+                                <div class="card__body">
+                                    <h3 data-i18n="nails.title">Calcul Pointes</h3>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="common.wood_class">Classe de bois</label>
+                                        <select class="form-control" id="nailWoodClass">
+                                            <option value="C14">C14</option>
+                                            <option value="C16">C16</option>
+                                            <option value="C18">C18</option>
+                                            <option value="C22">C22</option>
+                                            <option value="C24" selected>C24</option>
+                                            <option value="C27">C27</option>
+                                            <option value="GL20">GL20</option>
+                                            <option value="GL22">GL22</option>
+                                            <option value="GL24">GL24</option>
+                                            <option value="GL24h">GL24h</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="common.diameter">Diamètre (mm)</label>
+                                        <input type="number" class="form-control" id="nailDiameter" value="3.1" step="0.1" min="2" max="8">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="common.length">Longueur (mm)</label>
+                                        <input type="number" class="form-control" id="nailLength" value="70" step="1" min="20" max="200">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="nails.penetration">Pénétration (mm)</label>
+                                        <input type="number" class="form-control" id="nailPenetration" value="45" step="1" min="10">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="common.force">Force appliquée (kN)</label>
+                                        <input type="number" class="form-control" id="nailForce" value="0.8" step="0.1" min="0">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="common.service_class">Classe de service</label>
+                                        <select class="form-control" id="nailServiceClass">
+                                            <option value="1" selected data-i18n="service_class.class1">Classe 1 (Humidité ≤ 20%)</option>
+                                            <option value="2" data-i18n="service_class.class2">Classe 2 (Humidité ≤ 20%)</option>
+                                            <option value="3" data-i18n="service_class.class3">Classe 3 (Humidité > 20%)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="common.load_duration">Durée de charge</label>
+                                        <select class="form-control" id="nailLoadDuration">
+                                            <option value="permanent" data-i18n="load_duration.permanent">Permanente</option>
+                                            <option value="long_term" data-i18n="load_duration.long_term">Long terme</option>
+                                            <option value="medium_term" selected data-i18n="load_duration.medium_term">Moyen terme</option>
+                                            <option value="short_term" data-i18n="load_duration.short_term">Court terme</option>
+                                            <option value="instantaneous" data-i18n="load_duration.instantaneous">Instantanée</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="control-group">
-                                    <label class="form-label">Coef. Absorción Global:</label>
-                                    <input type="number" class="form-control" id="c3_absorcion_global" value="0.2" step="0.01">
-                                </div>
-                            </div>
-                            
-                            <!-- Lista de elementos -->
-                            <div class="elements-list">
-                                <table class="sheet-table" id="c3_elements_table">
-                                    <thead>
-                                        <tr>
-                                            <th>Tipo</th>
-                                            <th>Ancho (m)</th>
-                                            <th>Alto (m)</th>
-                                            <th>Densidad 1 (kg/m²)</th>
-                                            <th>Densidad 2 (kg/m²)</th>
-                                            <th>Separación (m)</th>
-                                            <th>Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Se llenará dinámicamente -->
-                                    </tbody>
-                                </table>
                             </div>
                         </div>
 
-                        <!-- Análisis por frecuencia -->
-                        <div class="sheet-section">
-                            <h3>Análisis por Frecuencia</h3>
-                            <div class="frequency-controls">
-                                <label class="form-label">Frecuencias de análisis (Hz):</label>
-                                <input type="text" class="form-control" id="c3_frecuencias" value="63,125,250,500,1000,2000,4000" placeholder="Separar con comas">
-                                <button class="btn btn--secondary btn--sm" id="c3_calculate">Calcular</button>
+                        <!-- Results Section -->
+                        <div class="results-section">
+                            <div class="card">
+                                <div class="card__body">
+                                    <h3 data-i18n="results.title">Résultats</h3>
+                                    
+                                    <div class="result-item">
+                                        <label data-i18n="results.bearing_strength">Résistance en pression diamétrale:</label>
+                                        <span id="nailBearingResult">--</span>
+                                        <span class="unit">N/mm²</span>
+                                    </div>
+                                    
+                                    <div class="result-item">
+                                        <label data-i18n="results.shear_resistance">Résistance au cisaillement:</label>
+                                        <span id="nailShearResult">--</span>
+                                        <span class="unit">kN</span>
+                                    </div>
+                                    
+                                    <div class="result-item">
+                                        <label data-i18n="nails.penetration_check">Vérification pénétration:</label>
+                                        <span id="nailPenetrationResult">--</span>
+                                    </div>
+                                    
+                                    <div class="result-item">
+                                        <label data-i18n="results.utilization">Taux d'utilisation:</label>
+                                        <span id="nailUtilizationResult">--</span>
+                                        <span class="unit">%</span>
+                                    </div>
+                                    
+                                    <div class="compliance-status">
+                                        <span class="status" id="nailComplianceStatus" data-i18n="status.pending">En attente...</span>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bolts Tab -->
+                <div class="tab-content" id="bolts-tab">
+                    <div class="calculation-grid">
+                        <!-- Input Section -->
+                        <div class="input-section">
+                            <div class="card">
+                                <div class="card__body">
+                                    <h3 data-i18n="bolts.title">Calcul Boulons</h3>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="common.wood_class">Classe de bois</label>
+                                        <select class="form-control" id="boltWoodClass">
+                                            <option value="C14">C14</option>
+                                            <option value="C16">C16</option>
+                                            <option value="C18">C18</option>
+                                            <option value="C22">C22</option>
+                                            <option value="C24" selected>C24</option>
+                                            <option value="C27">C27</option>
+                                            <option value="GL20">GL20</option>
+                                            <option value="GL22">GL22</option>
+                                            <option value="GL24">GL24</option>
+                                            <option value="GL24h">GL24h</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="common.diameter">Diamètre (mm)</label>
+                                        <input type="number" class="form-control" id="boltDiameter" value="12" step="1" min="6" max="30">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="bolts.steel_grade">Classe d'acier</label>
+                                        <select class="form-control" id="boltSteelGrade">
+                                            <option value="4.6">4.6</option>
+                                            <option value="4.8">4.8</option>
+                                            <option value="5.6">5.6</option>
+                                            <option value="5.8" selected>5.8</option>
+                                            <option value="6.8">6.8</option>
+                                            <option value="8.8">8.8</option>
+                                            <option value="10.9">10.9</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="bolts.thickness">Épaisseur bois (mm)</label>
+                                        <input type="number" class="form-control" id="boltThickness" value="50" step="1" min="20">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="common.force">Force appliquée (kN)</label>
+                                        <input type="number" class="form-control" id="boltForce" value="15" step="0.1" min="0">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="common.service_class">Classe de service</label>
+                                        <select class="form-control" id="boltServiceClass">
+                                            <option value="1" selected data-i18n="service_class.class1">Classe 1 (Humidité ≤ 20%)</option>
+                                            <option value="2" data-i18n="service_class.class2">Classe 2 (Humidité ≤ 20%)</option>
+                                            <option value="3" data-i18n="service_class.class3">Classe 3 (Humidité > 20%)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" data-i18n="common.load_duration">Durée de charge</label>
+                                        <select class="form-control" id="boltLoadDuration">
+                                            <option value="permanent" data-i18n="load_duration.permanent">Permanente</option>
+                                            <option value="long_term" data-i18n="load_duration.long_term">Long terme</option>
+                                            <option value="medium_term" selected data-i18n="load_duration.medium_term">Moyen terme</option>
+                                            <option value="short_term" data-i18n="load_duration.short_term">Court terme</option>
+                                            <option value="instantaneous" data-i18n="load_duration.instantaneous">Instantanée</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results Section -->
+                        <div class="results-section">
+                            <div class="card">
+                                <div class="card__body">
+                                    <h3 data-i18n="results.title">Résultats</h3>
+                                    
+                                    <div class="result-item">
+                                        <label data-i18n="results.bearing_strength">Résistance en pression diamétrale:</label>
+                                        <span id="boltBearingResult">--</span>
+                                        <span class="unit">N/mm²</span>
+                                    </div>
+                                    
+                                    <div class="result-item">
+                                        <label data-i18n="results.shear_resistance">Résistance au cisaillement:</label>
+                                        <span id="boltShearResult">--</span>
+                                        <span class="unit">kN</span>
+                                    </div>
+                                    
+                                    <div class="result-item">
+                                        <label data-i18n="bolts.bearing_resistance">Résistance à la pression:</label>
+                                        <span id="boltBearingCapacityResult">--</span>
+                                        <span class="unit">kN</span>
+                                    </div>
+                                    
+                                    <div class="result-item">
+                                        <label data-i18n="results.utilization">Taux d'utilisation:</label>
+                                        <span id="boltUtilizationResult">--</span>
+                                        <span class="unit">%</span>
+                                    </div>
+                                    
+                                    <div class="compliance-status">
+                                        <span class="status" id="boltComplianceStatus" data-i18n="status.pending">En attente...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Tab -->
+                <div class="tab-content" id="summary-tab">
+                    <div class="card">
+                        <div class="card__body">
+                            <h3 data-i18n="summary.title">Résumé des Calculs</h3>
                             
-                            <table class="sheet-table frequency-table">
-                                <thead>
-                                    <tr>
-                                        <th>Frecuencia (Hz)</th>
-                                        <th>Aislamiento Global (dB)</th>
-                                        <th>Aislamiento Efectivo (dB)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="c3_results_table">
-                                    <!-- Se llenará dinámicamente -->
-                                </tbody>
-                            </table>
+                            <div class="summary-section">
+                                <h4 data-i18n="tabs.screws">Tirefonds</h4>
+                                <div class="summary-grid">
+                                    <div class="summary-item">
+                                        <span data-i18n="summary.capacity">Capacité:</span>
+                                        <span id="screwSummaryCapacity">-- kN</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span data-i18n="summary.utilization">Utilisation:</span>
+                                        <span id="screwSummaryUtilization">--%</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span data-i18n="summary.status">Statut:</span>
+                                        <span id="screwSummaryStatus" class="status">--</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="summary-section">
+                                <h4 data-i18n="tabs.nails">Pointes</h4>
+                                <div class="summary-grid">
+                                    <div class="summary-item">
+                                        <span data-i18n="summary.capacity">Capacité:</span>
+                                        <span id="nailSummaryCapacity">-- kN</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span data-i18n="summary.utilization">Utilisation:</span>
+                                        <span id="nailSummaryUtilization">--%</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span data-i18n="summary.status">Statut:</span>
+                                        <span id="nailSummaryStatus" class="status">--</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="summary-section">
+                                <h4 data-i18n="tabs.bolts">Boulons</h4>
+                                <div class="summary-grid">
+                                    <div class="summary-item">
+                                        <span data-i18n="summary.capacity">Capacité:</span>
+                                        <span id="boltSummaryCapacity">-- kN</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span data-i18n="summary.utilization">Utilisation:</span>
+                                        <span id="boltSummaryUtilization">--%</span>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span data-i18n="summary.status">Statut:</span>
+                                        <span id="boltSummaryStatus" class="status">--</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="container">
+                <p data-i18n="footer.disclaimer">
+                    Les calculs sont basés sur l'Eurocode 5 (EN 1995-1-1). Toujours vérifier avec un ingénieur qualifié.
+                </p>
+            </div>
+        </footer>
     </div>
 
     <script src="app.js"></script>

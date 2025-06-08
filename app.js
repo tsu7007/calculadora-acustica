@@ -1,671 +1,943 @@
-// Calculadora de Aislamiento Acústico - Simulación Google Sheets
-// ================================================================
-
-// Datos de configuración
-const CONFIG = {
-    frecuenciasEstandar: [63, 125, 250, 500, 1000, 2000, 4000],
-
-    ejemplosCodigo: {
-        caso1: `/**
- * Calcula el aislamiento de una fachada compuesta.
- * @param {number} frecuencia - Frecuencia de análisis en Hz.
- * @param {number} coefAbsorcion - Coeficiente de absorción de pared.
- * @param {number} anchoPared - Ancho de la pared en m.
- * @param {number} altoPared - Alto de la pared en m.
- * @param {number} densidad1 - Densidad de la primera capa de pared en Kg/m².
- * @param {number} densidad2 - Densidad de la segunda capa de pared en Kg/m².
- * @param {number} separacion - Separación entre paredes en m.
- * @param {number} anchoVentana - Ancho de la ventana en m.
- * @param {number} altoVentana - Alto de la ventana en m.
- * @param {number} densidadV1 - Densidad de la primera ventana en Kg/m².
- * @param {number} densidadV2 - Densidad de la segunda ventana en Kg/m².
- * @return {number} El aislamiento de la fachada compuesta en dB.
- * @customfunction
- */
-function AISLAMIENTO_FACHADA_COMPUESTA(frecuencia, coefAbsorcion, anchoPared, altoPared, densidad1, densidad2, separacion, anchoVentana, altoVentana, densidadV1, densidadV2) {
-  // Paso 1: Cálculo del aislamiento de cada pared simple (Ley de la masa)
-  var R1 = 20 * Math.log10(densidad1) + 20 * Math.log10(frecuencia) - 43;
-  var R2 = 20 * Math.log10(densidad2) + 20 * Math.log10(frecuencia) - 43;
-  
-  // Paso 2: Cálculo de la frecuencia de resonancia
-  var fo = 60 * Math.sqrt((1/densidad1 + 1/densidad2)/separacion);
-  
-  // Paso 3: Determinación del comportamiento acústico
-  var R_paredDoble;
-  if (frecuencia < fo) {
-    // Estamos en el dominio de la elasticidad
-    R_paredDoble = R1 + R2 - 10 * Math.log10(fo/frecuencia);
-  } else {
-    // Otro comportamiento (simplificado para este ejemplo)
-    R_paredDoble = R1 + R2 + 20 * Math.log10(separacion*frecuencia/55) - 29;
-  }
-  
-  // Paso 4: Cálculo del aislamiento de la ventana doble (mismo procedimiento)
-  var R1_ventana = 20 * Math.log10(densidadV1) + 20 * Math.log10(frecuencia) - 43;
-  var R2_ventana = 20 * Math.log10(densidadV2) + 20 * Math.log10(frecuencia) - 43;
-  
-  var fo_ventana = 60 * Math.sqrt((1/densidadV1 + 1/densidadV2)/separacion);
-  
-  var R_ventanaDoble;
-  if (frecuencia < fo_ventana) {
-    R_ventanaDoble = R1_ventana + R2_ventana - 10 * Math.log10(fo_ventana/frecuencia);
-  } else {
-    R_ventanaDoble = R1_ventana + R2_ventana + 20 * Math.log10(separacion*frecuencia/55) - 29;
-  }
-  
-  // Paso 5: Cálculo del aislamiento global de la fachada compuesta
-  var S_pared = anchoPared * altoPared - anchoVentana * altoVentana;
-  var S_ventana = anchoVentana * altoVentana;
-  var S_total = S_pared + S_ventana;
-  
-  var R_global = 10 * Math.log10(S_total / (S_pared * Math.pow(10, -R_paredDoble/10) + S_ventana * Math.pow(10, -R_ventanaDoble/10)));
-  
-  // Paso 6: Consideración del coeficiente de absorción
-  var R_efectivo = R_global - 10 * Math.log10(1 - coefAbsorcion);
-  
-  return R_efectivo;
-}`,
-        caso2: `/**
- * Calcula el aislamiento total de una pared compuesta en función del espectro emisor.
- * @param {number} anchoPared - Ancho de la pared en m.
- * @param {number} altoPared - Alto de la pared en m.
- * @param {number} espesorPared - Espesor de la pared en m.
- * @param {number} densidadPared - Densidad de la pared en Kg/m³.
- * @param {number} anchoPuerta - Ancho de la puerta en m.
- * @param {number} altoPuerta - Alto de la puerta en m.
- * @param {number} espesorPuerta - Espesor de la puerta en m.
- * @param {number} densidadPuerta - Densidad de la puerta en Kg/m³.
- * @param {string} espectroEmisor - Tipo de espectro emisor ("1" o "2").
- * @return {number} El aislamiento total de la pared compuesta en dBA.
- * @customfunction
- */
-function AISLAMIENTO_PARED_COMPUESTA(anchoPared, altoPared, espesorPared, densidadPared, anchoPuerta, altoPuerta, espesorPuerta, densidadPuerta, espectroEmisor) {
-  // Paso 1: Cálculo de las masas por unidad de superficie
-  var masaPared = densidadPared * espesorPared; // kg/m²
-  var masaPuerta = densidadPuerta * espesorPuerta; // kg/m²
-  
-  // Paso 2: Definición de frecuencias y espectros
-  var frecuencias = [63, 125, 250, 500, 1000, 2000, 4000];
-  var espectroEmisor1 = [70, 80, 65, 60, 51, 65, 54];
-  var espectroEmisor2 = [75, 75, 64, 58, 52, 51, 60];
-  var ponderacionA = [-26, -16, -9, -3, 0, 1, 1];
-  
-  // Paso 3: Cálculo de áreas
-  var areaPuerta = anchoPuerta * altoPuerta;
-  var areaPared = anchoPared * altoPared - areaPuerta;
-  var areaTotal = anchoPared * altoPared;
-  
-  // Continúa con el análisis por frecuencia...
-  return nivelGlobalPonderadoA;
-}`,
-        caso3: `/**
- * Calcula el aislamiento acústico para múltiples elementos en una fachada.
- * @param {range} elementos - Rango con información de elementos (tipo, ancho, alto, densidad, etc.)
- * @param {range} frecuencias - Rango con las frecuencias de análisis
- * @param {number} coefAbsorcion - Coeficiente de absorción
- * @return {array} Matriz con los resultados de aislamiento para cada frecuencia
- * @customfunction
- */
-function AISLAMIENTO_PERSONALIZADO(elementos, frecuencias, coefAbsorcion) {
-  var resultados = [];
-  var header = ['Frecuencia (Hz)', 'Aislamiento Global (dB)', 'Aislamiento Efectivo (dB)'];
-  resultados.push(header);
-  
-  // Procesar cada frecuencia...
-  return resultados;
-}`
-    }
-};
-
-// Variables globales
-let elementosPersonalizados = [];
-let currentCase = 'caso1';
-
-// Inicialización de la aplicación
-document.addEventListener('DOMContentLoaded', function() {
-    initializeTabs();
-    initializeCodePanel();
-    initializeCalculations();
-    initializeCustomCase();
+// Internationalization System
+const i18n = {
+    currentLanguage: 'fr',
     
-    // Calcular valores iniciales
-    calculateCaso1();
-    calculateCaso2();
-});
-
-// ================================
-// GESTIÓN DE PESTAÑAS
-// ================================
-
-function initializeTabs() {
-    const tabs = document.querySelectorAll('.tab');
-    const tabContents = document.querySelectorAll('.tab-content');
-    
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            const caseId = this.getAttribute('data-case');
-            
-            // Actualizar pestañas activas
-            tabs.forEach(t => t.classList.remove('active'));
-            tabContents.forEach(tc => tc.classList.remove('active'));
-            
-            this.classList.add('active');
-            document.getElementById(caseId).classList.add('active');
-            
-            currentCase = caseId;
-            
-            // Mostrar código correspondiente
-            if (document.getElementById('codePanel').classList.contains('active')) {
-                showCode(caseId);
+    translations: {
+        fr: {
+            app: {
+                title: "Calculateur d'Assemblages Bois - Eurocode 5",
+                subtitle: "Calculs professionnels selon EN 1995-1-1",
+                description: "Calculateur professionnel pour les assemblages de structures bois selon l'Eurocode 5 (EN 1995-1-1)"
+            },
+            tabs: {
+                screws: "Tirefonds",
+                nails: "Pointes", 
+                bolts: "Boulons",
+                summary: "Résumé"
+            },
+            common: {
+                wood_class: "Classe de bois",
+                diameter: "Diamètre (mm)",
+                length: "Longueur (mm)",
+                angle: "Angle d'inclinaison (°)",
+                force: "Force appliquée (kN)",
+                service_class: "Classe de service",
+                load_duration: "Durée de charge"
+            },
+            service_class: {
+                class1: "Classe 1 (Humidité ≤ 20%)",
+                class2: "Classe 2 (Humidité ≤ 20%)", 
+                class3: "Classe 3 (Humidité > 20%)"
+            },
+            load_duration: {
+                permanent: "Permanente",
+                long_term: "Long terme",
+                medium_term: "Moyen terme",
+                short_term: "Court terme",
+                instantaneous: "Instantanée"
+            },
+            screws: {
+                title: "Calcul Tirefonds/Vis"
+            },
+            nails: {
+                title: "Calcul Pointes",
+                penetration: "Pénétration (mm)",
+                penetration_check: "Vérification pénétration"
+            },
+            bolts: {
+                title: "Calcul Boulons",
+                steel_grade: "Classe d'acier",
+                thickness: "Épaisseur bois (mm)",
+                bearing_resistance: "Résistance à la pression"
+            },
+            results: {
+                title: "Résultats",
+                bearing_strength: "Résistance en pression diamétrale",
+                withdrawal_capacity: "Capacité d'arrachement", 
+                rope_effect: "Effet de corde",
+                total_resistance: "Résistance totale",
+                shear_resistance: "Résistance au cisaillement",
+                utilization: "Taux d'utilisation"
+            },
+            status: {
+                pending: "En attente...",
+                compliant: "CONFORME",
+                non_compliant: "NON CONFORME"
+            },
+            summary: {
+                title: "Résumé des Calculs",
+                capacity: "Capacité",
+                utilization: "Utilisation", 
+                status: "Statut"
+            },
+            buttons: {
+                save: "Sauvegarder",
+                load: "Charger",
+                export: "Exporter"
+            },
+            footer: {
+                disclaimer: "Les calculs sont basés sur l'Eurocode 5 (EN 1995-1-1). Toujours vérifier avec un ingénieur qualifié."
             }
-        });
-    });
-}
-
-// ================================
-// PANEL DE CÓDIGO
-// ================================
-
-function initializeCodePanel() {
-    const showCodeBtn = document.getElementById('showCodeBtn');
-    const closeCodeBtn = document.getElementById('closeCodeBtn');
-    const codePanel = document.getElementById('codePanel');
-    
-    showCodeBtn.addEventListener('click', function() {
-        codePanel.classList.add('active');
-        showCode(currentCase);
-    });
-    
-    closeCodeBtn.addEventListener('click', function() {
-        codePanel.classList.remove('active');
-    });
-}
-
-function showCode(caseId) {
-    const codeDisplay = document.getElementById('codeDisplay');
-    const codeKey = caseId;
-    
-    if (CONFIG.ejemplosCodigo[codeKey]) {
-        codeDisplay.textContent = CONFIG.ejemplosCodigo[codeKey];
-    } else {
-        codeDisplay.textContent = '// Código no disponible para este caso';
-    }
-}
-
-// ================================
-// CÁLCULOS - CASO 1: FACHADA COMPUESTA
-// ================================
-
-function initializeCalculations() {
-    // Event listeners para inputs del Caso 1
-    const caso1Inputs = document.querySelectorAll('#caso1 .cell-input');
-    caso1Inputs.forEach(input => {
-        input.addEventListener('input', debounce(calculateCaso1, 500));
-    });
-    
-    // Event listeners para inputs del Caso 2
-    const caso2Inputs = document.querySelectorAll('#caso2 .cell-input, #caso2 select');
-    caso2Inputs.forEach(input => {
-        input.addEventListener('input', debounce(calculateCaso2, 500));
-        input.addEventListener('change', debounce(calculateCaso2, 500));
-    });
-    
-    // Botón calcular global
-    const calculateBtn = document.getElementById('calculateBtn');
-    calculateBtn.addEventListener('click', function() {
-        calculateAll();
-    });
-}
-
-function calculateCaso1() {
-    try {
-        // Obtener valores de entrada
-        const frecuencia = parseFloat(document.getElementById('c1_frecuencia').value) || 63;
-        const absorcion = parseFloat(document.getElementById('c1_absorcion').value) || 0.2;
-        const anchoPared = parseFloat(document.getElementById('c1_ancho_pared').value) || 6;
-        const altoPared = parseFloat(document.getElementById('c1_alto_pared').value) || 6;
-        const densidad1 = parseFloat(document.getElementById('c1_densidad1').value) || 10;
-        const densidad2 = parseFloat(document.getElementById('c1_densidad2').value) || 30;
-        const separacion = parseFloat(document.getElementById('c1_separacion').value) || 0.1;
-        const anchoVentana = parseFloat(document.getElementById('c1_ancho_ventana').value) || 0.5;
-        const altoVentana = parseFloat(document.getElementById('c1_alto_ventana').value) || 0.5;
-        const densidadV1 = parseFloat(document.getElementById('c1_densidadv1').value) || 10;
-        const densidadV2 = parseFloat(document.getElementById('c1_densidadv2').value) || 30;
-        
-        // Paso 1: Cálculo del aislamiento de cada pared simple (Ley de la masa)
-        const R1 = 20 * Math.log10(densidad1) + 20 * Math.log10(frecuencia) - 43;
-        const R2 = 20 * Math.log10(densidad2) + 20 * Math.log10(frecuencia) - 43;
-        
-        // Paso 2: Frecuencia de resonancia
-        const fo = 60 * Math.sqrt((1/densidad1 + 1/densidad2)/separacion);
-        
-        // Paso 3: Aislamiento de pared doble
-        let RParedDoble;
-        if (frecuencia < fo) {
-            RParedDoble = R1 + R2 - 10 * Math.log10(fo/frecuencia);
-        } else {
-            RParedDoble = R1 + R2 + 20 * Math.log10(separacion * frecuencia / 55) - 29;
-        }
-        
-        // Paso 4: Aislamiento de ventana doble (proceso similar)
-        const R1Ventana = 20 * Math.log10(densidadV1) + 20 * Math.log10(frecuencia) - 43;
-        const R2Ventana = 20 * Math.log10(densidadV2) + 20 * Math.log10(frecuencia) - 43;
-        const foVentana = 60 * Math.sqrt((1/densidadV1 + 1/densidadV2)/separacion);
-        
-        let RVentanaDoble;
-        if (frecuencia < foVentana) {
-            RVentanaDoble = R1Ventana + R2Ventana - 10 * Math.log10(foVentana/frecuencia);
-        } else {
-            RVentanaDoble = R1Ventana + R2Ventana + 20 * Math.log10(separacion * frecuencia / 55) - 29;
-        }
-        
-        // Paso 5: Áreas
-        const areaPared = anchoPared * altoPared - anchoVentana * altoVentana;
-        const areaVentana = anchoVentana * altoVentana;
-        const areaTotal = areaPared + areaVentana;
-        
-        // Paso 6: Aislamiento global
-        const RGlobal = 10 * Math.log10(areaTotal / (areaPared * Math.pow(10, -RParedDoble/10) + areaVentana * Math.pow(10, -RVentanaDoble/10)));
-        
-        // Paso 7: Aislamiento efectivo con absorción
-        const REfectivo = RGlobal - 10 * Math.log10(1 - absorcion);
-        
-        // Actualizar resultados en la interfaz
-        document.getElementById('c1_r1').textContent = R1.toFixed(2) + ' dB';
-        document.getElementById('c1_r2').textContent = R2.toFixed(2) + ' dB';
-        document.getElementById('c1_fo').textContent = fo.toFixed(2) + ' Hz';
-        document.getElementById('c1_r_pared_doble').textContent = RParedDoble.toFixed(2) + ' dB';
-        document.getElementById('c1_r_ventana_doble').textContent = RVentanaDoble.toFixed(2) + ' dB';
-        document.getElementById('c1_area_pared').textContent = areaPared.toFixed(2) + ' m²';
-        document.getElementById('c1_area_ventana').textContent = areaVentana.toFixed(2) + ' m²';
-        document.getElementById('c1_r_global').textContent = RGlobal.toFixed(2) + ' dB';
-        document.getElementById('c1_resultado_final').textContent = REfectivo.toFixed(2) + ' dB';
-        
-    } catch (error) {
-        console.error('Error en cálculo Caso 1:', error);
-        // Mostrar valores por defecto en caso de error
-        const resultElements = document.querySelectorAll('#caso1 .result-cell, #caso1 .final-result');
-        resultElements.forEach(el => el.textContent = 'Error');
-    }
-}
-
-// ================================
-// CÁLCULOS - CASO 2: PARED COMPUESTA
-// ================================
-
-function calculateCaso2() {
-    try {
-        // Obtener valores de entrada
-        const anchoPared = parseFloat(document.getElementById('c2_ancho_pared').value) || 10;
-        const altoPared = parseFloat(document.getElementById('c2_alto_pared').value) || 4;
-        const espesorPared = parseFloat(document.getElementById('c2_espesor_pared').value) || 0.1;
-        const densidadPared = parseFloat(document.getElementById('c2_densidad_pared').value) || 2000;
-        const anchoPuerta = parseFloat(document.getElementById('c2_ancho_puerta').value) || 3;
-        const altoPuerta = parseFloat(document.getElementById('c2_alto_puerta').value) || 1.66;
-        const espesorPuerta = parseFloat(document.getElementById('c2_espesor_puerta').value) || 0.1;
-        const densidadPuerta = parseFloat(document.getElementById('c2_densidad_puerta').value) || 100;
-        const espectroTipo = document.getElementById('c2_espectro').value;
-        
-        // Calcular masas por unidad de superficie
-        const masaPared = densidadPared * espesorPared; // kg/m²
-        const masaPuerta = densidadPuerta * espesorPuerta; // kg/m²
-        
-        // Calcular áreas
-        const areaPuerta = anchoPuerta * altoPuerta;
-        const areaPared = anchoPared * altoPared - areaPuerta;
-        const areaTotal = anchoPared * altoPared;
-        
-        // Seleccionar espectro emisor
-        const espectroEmisor = CONFIG.espectrosEmisores[espectroTipo];
-        
-        // Crear tabla de resultados
-        const tableBody = document.getElementById('c2_frequency_table');
-        tableBody.innerHTML = '';
-        
-        let nivelesReceptorPonderados = [];
-        
-        CONFIG.frecuenciasEstandar.forEach((frecuencia, index) => {
-            // Aislamiento de la pared (Ley de la masa)
-            const aislamientoPared = 20 * Math.log10(masaPared) + 20 * Math.log10(frecuencia) - 43;
-            
-            // Aislamiento de la puerta (Ley de la masa)
-            const aislamientoPuerta = 20 * Math.log10(masaPuerta) + 20 * Math.log10(frecuencia) - 43;
-            
-            // Aislamiento global (elementos mixtos)
-            const aislamientoGlobal = 10 * Math.log10(areaTotal / 
-                (areaPared * Math.pow(10, -aislamientoPared/10) + 
-                 areaPuerta * Math.pow(10, -aislamientoPuerta/10)));
-            
-            // Nivel en el receptor
-            const nivelEmisor = espectroEmisor[index];
-            const nivelReceptor = nivelEmisor - aislamientoGlobal;
-            
-            // Aplicar ponderación A
-            const ponderacion = CONFIG.ponderacionA[index];
-            const nivelReceptorPonderado = nivelReceptor + ponderacion;
-            nivelesReceptorPonderados.push(nivelReceptorPonderado);
-            
-            // Crear fila en la tabla
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${frecuencia}</td>
-                <td>${aislamientoPared.toFixed(1)}</td>
-                <td>${aislamientoPuerta.toFixed(1)}</td>
-                <td>${aislamientoGlobal.toFixed(1)}</td>
-                <td>${nivelEmisor.toFixed(1)}</td>
-                <td>${nivelReceptor.toFixed(1)}</td>
-                <td>${ponderacion.toFixed(0)}</td>
-                <td>${nivelReceptorPonderado.toFixed(1)}</td>
-            `;
-            tableBody.appendChild(row);
-        });
-        
-        // Calcular nivel global ponderado A
-        let sumaEnergetica = 0;
-        nivelesReceptorPonderados.forEach(nivel => {
-            sumaEnergetica += Math.pow(10, nivel/10);
-        });
-        
-        const nivelGlobalPonderadoA = 10 * Math.log10(sumaEnergetica);
-        
-        // Actualizar resultado final
-        document.getElementById('c2_resultado_final').textContent = nivelGlobalPonderadoA.toFixed(1) + ' dBA';
-        
-    } catch (error) {
-        console.error('Error en cálculo Caso 2:', error);
-        document.getElementById('c2_resultado_final').textContent = 'Error';
-    }
-}
-
-// ================================
-// CASO 3: PERSONALIZADO
-// ================================
-
-function initializeCustomCase() {
-    const addElementBtn = document.getElementById('c3_add_element');
-    const calculateBtn = document.getElementById('c3_calculate');
-    
-    addElementBtn.addEventListener('click', addElement);
-    calculateBtn.addEventListener('click', calculateCaso3);
-    
-    // Añadir algunos elementos por defecto
-    addDefaultElements();
-}
-
-function addDefaultElements() {
-    // Añadir una pared simple por defecto
-    elementosPersonalizados = [
-        {
-            tipo: 'pared_simple',
-            ancho: 10,
-            alto: 4,
-            densidad1: 200,
-            densidad2: null,
-            separacion: null
         },
-        {
-            tipo: 'ventana',
-            ancho: 1.5,
-            alto: 1.2,
-            densidad1: 20,
-            densidad2: null,
-            separacion: null
+        en: {
+            app: {
+                title: "Wood Connection Calculator - Eurocode 5",
+                subtitle: "Professional calculations according to EN 1995-1-1",
+                description: "Professional calculator for wood structural connections according to Eurocode 5 (EN 1995-1-1)"
+            },
+            tabs: {
+                screws: "Screws",
+                nails: "Nails",
+                bolts: "Bolts", 
+                summary: "Summary"
+            },
+            common: {
+                wood_class: "Wood class",
+                diameter: "Diameter (mm)",
+                length: "Length (mm)",
+                angle: "Inclination angle (°)",
+                force: "Applied force (kN)",
+                service_class: "Service class",
+                load_duration: "Load duration"
+            },
+            service_class: {
+                class1: "Class 1 (Moisture ≤ 20%)",
+                class2: "Class 2 (Moisture ≤ 20%)",
+                class3: "Class 3 (Moisture > 20%)"
+            },
+            load_duration: {
+                permanent: "Permanent",
+                long_term: "Long term",
+                medium_term: "Medium term", 
+                short_term: "Short term",
+                instantaneous: "Instantaneous"
+            },
+            screws: {
+                title: "Screw Calculation"
+            },
+            nails: {
+                title: "Nail Calculation",
+                penetration: "Penetration (mm)",
+                penetration_check: "Penetration check"
+            },
+            bolts: {
+                title: "Bolt Calculation",
+                steel_grade: "Steel grade",
+                thickness: "Wood thickness (mm)",
+                bearing_resistance: "Bearing resistance"
+            },
+            results: {
+                title: "Results",
+                bearing_strength: "Bearing strength",
+                withdrawal_capacity: "Withdrawal capacity",
+                rope_effect: "Rope effect", 
+                total_resistance: "Total resistance",
+                shear_resistance: "Shear resistance",
+                utilization: "Utilization ratio"
+            },
+            status: {
+                pending: "Pending...",
+                compliant: "COMPLIANT",
+                non_compliant: "NON COMPLIANT"
+            },
+            summary: {
+                title: "Calculation Summary",
+                capacity: "Capacity",
+                utilization: "Utilization",
+                status: "Status"
+            },
+            buttons: {
+                save: "Save",
+                load: "Load", 
+                export: "Export"
+            },
+            footer: {
+                disclaimer: "Calculations are based on Eurocode 5 (EN 1995-1-1). Always verify with a qualified engineer."
+            }
+        },
+        es: {
+            app: {
+                title: "Calculadora de Conexiones de Madera - Eurocódigo 5",
+                subtitle: "Cálculos profesionales según EN 1995-1-1",
+                description: "Calculadora profesional para conexiones de estructuras de madera según el Eurocódigo 5 (EN 1995-1-1)"
+            },
+            tabs: {
+                screws: "Tirafondos",
+                nails: "Clavos",
+                bolts: "Pernos",
+                summary: "Resumen"
+            },
+            common: {
+                wood_class: "Clase de madera",
+                diameter: "Diámetro (mm)",
+                length: "Longitud (mm)", 
+                angle: "Ángulo de inclinación (°)",
+                force: "Fuerza aplicada (kN)",
+                service_class: "Clase de servicio",
+                load_duration: "Duración de carga"
+            },
+            service_class: {
+                class1: "Clase 1 (Humedad ≤ 20%)",
+                class2: "Clase 2 (Humedad ≤ 20%)",
+                class3: "Clase 3 (Humedad > 20%)"
+            },
+            load_duration: {
+                permanent: "Permanente",
+                long_term: "Largo plazo",
+                medium_term: "Medio plazo",
+                short_term: "Corto plazo", 
+                instantaneous: "Instantánea"
+            },
+            screws: {
+                title: "Cálculo Tirafondos"
+            },
+            nails: {
+                title: "Cálculo Clavos",
+                penetration: "Penetración (mm)",
+                penetration_check: "Verificación penetración"
+            },
+            bolts: {
+                title: "Cálculo Pernos",
+                steel_grade: "Grado de acero",
+                thickness: "Espesor madera (mm)",
+                bearing_resistance: "Resistencia al aplastamiento"
+            },
+            results: {
+                title: "Resultados",
+                bearing_strength: "Resistencia al aplastamiento",
+                withdrawal_capacity: "Capacidad de extracción",
+                rope_effect: "Efecto cuerda",
+                total_resistance: "Resistencia total",
+                shear_resistance: "Resistencia al corte",
+                utilization: "Relación de utilización"
+            },
+            status: {
+                pending: "Pendiente...",
+                compliant: "CONFORME", 
+                non_compliant: "NO CONFORME"
+            },
+            summary: {
+                title: "Resumen de Cálculos",
+                capacity: "Capacidad",
+                utilization: "Utilización",
+                status: "Estado"
+            },
+            buttons: {
+                save: "Guardar",
+                load: "Cargar",
+                export: "Exportar"
+            },
+            footer: {
+                disclaimer: "Los cálculos se basan en el Eurocódigo 5 (EN 1995-1-1). Siempre verificar con un ingeniero calificado."
+            }
         }
-    ];
-    updateElementsTable();
-}
+    },
 
-function addElement() {
-    const tipo = document.getElementById('c3_tipo_elemento').value;
-    
-    const newElement = {
-        tipo: tipo,
-        ancho: 1,
-        alto: 1,
-        densidad1: tipo === 'ventana' ? 20 : 100,
-        densidad2: tipo === 'pared_doble' ? 100 : null,
-        separacion: tipo === 'pared_doble' ? 0.1 : null
-    };
-    
-    elementosPersonalizados.push(newElement);
-    updateElementsTable();
-}
-
-function updateElementsTable() {
-    const tableBody = document.querySelector('#c3_elements_table tbody');
-    tableBody.innerHTML = '';
-    
-    elementosPersonalizados.forEach((elemento, index) => {
-        const row = document.createElement('tr');
+    // Get translation for a key
+    t(key) {
+        const keys = key.split('.');
+        let translation = this.translations[this.currentLanguage];
         
-        const tipoTexto = {
-            'pared_simple': 'Pared Simple',
-            'pared_doble': 'Pared Doble',
-            'ventana': 'Ventana',
-            'puerta': 'Puerta'
-        };
-        
-        row.innerHTML = `
-            <td>${tipoTexto[elemento.tipo]}</td>
-            <td><input type="number" class="form-control cell-input" value="${elemento.ancho}" step="0.1" onchange="updateElement(${index}, 'ancho', this.value)"></td>
-            <td><input type="number" class="form-control cell-input" value="${elemento.alto}" step="0.1" onchange="updateElement(${index}, 'alto', this.value)"></td>
-            <td><input type="number" class="form-control cell-input" value="${elemento.densidad1}" onchange="updateElement(${index}, 'densidad1', this.value)"></td>
-            <td><input type="number" class="form-control cell-input" value="${elemento.densidad2 || ''}" ${elemento.densidad2 === null ? 'disabled' : ''} onchange="updateElement(${index}, 'densidad2', this.value)"></td>
-            <td><input type="number" class="form-control cell-input" value="${elemento.separacion || ''}" step="0.01" ${elemento.separacion === null ? 'disabled' : ''} onchange="updateElement(${index}, 'separacion', this.value)"></td>
-            <td><button class="action-btn" onclick="removeElement(${index})">🗑️</button></td>
-        `;
-        
-        tableBody.appendChild(row);
-    });
-}
-
-function updateElement(index, property, value) {
-    if (value === '' && (property === 'densidad2' || property === 'separacion')) {
-        elementosPersonalizados[index][property] = null;
-    } else {
-        elementosPersonalizados[index][property] = parseFloat(value) || 0;
-    }
-}
-
-function removeElement(index) {
-    elementosPersonalizados.splice(index, 1);
-    updateElementsTable();
-}
-
-function calculateCaso3() {
-    try {
-        const frecuenciasInput = document.getElementById('c3_frecuencias').value;
-        const absorcionGlobal = parseFloat(document.getElementById('c3_absorcion_global').value) || 0.2;
-        
-        // Parsear frecuencias
-        const frecuencias = frecuenciasInput.split(',').map(f => parseFloat(f.trim())).filter(f => !isNaN(f));
-        
-        if (frecuencias.length === 0) {
-            throw new Error('No se especificaron frecuencias válidas');
-        }
-        
-        // Tabla de resultados
-        const tableBody = document.getElementById('c3_results_table');
-        tableBody.innerHTML = '';
-        
-        frecuencias.forEach(frecuencia => {
-            let areaTotal = 0;
-            let sumatoriaTransmision = 0;
-            
-            elementosPersonalizados.forEach(elemento => {
-                const area = elemento.ancho * elemento.alto;
-                let aislamiento;
-                
-                if (elemento.tipo === 'pared_simple' || elemento.tipo === 'ventana' || elemento.tipo === 'puerta') {
-                    // Ley de la masa simple
-                    aislamiento = 20 * Math.log10(elemento.densidad1) + 20 * Math.log10(frecuencia) - 43;
-                } else if (elemento.tipo === 'pared_doble') {
-                    // Pared doble
-                    const R1 = 20 * Math.log10(elemento.densidad1) + 20 * Math.log10(frecuencia) - 43;
-                    const R2 = 20 * Math.log10(elemento.densidad2) + 20 * Math.log10(frecuencia) - 43;
-                    const fo = 60 * Math.sqrt((1/elemento.densidad1 + 1/elemento.densidad2)/elemento.separacion);
-                    
-                    if (frecuencia < fo) {
-                        aislamiento = R1 + R2 - 10 * Math.log10(fo/frecuencia);
+        for (const k of keys) {
+            if (translation && translation[k]) {
+                translation = translation[k];
+            } else {
+                // Fallback to French if translation not found
+                translation = this.translations.fr;
+                for (const fallbackK of keys) {
+                    if (translation && translation[fallbackK]) {
+                        translation = translation[fallbackK];
                     } else {
-                        aislamiento = R1 + R2 + 20 * Math.log10(elemento.separacion * frecuencia / 55) - 29;
+                        return key; // Return key if no translation found
                     }
                 }
-                
-                areaTotal += area;
-                sumatoriaTransmision += area * Math.pow(10, -aislamiento/10);
-            });
-            
-            // Aislamiento global
-            const aislamientoGlobal = 10 * Math.log10(areaTotal / sumatoriaTransmision);
-            
-            // Aislamiento efectivo con absorción
-            const aislamientoEfectivo = aislamientoGlobal - 10 * Math.log10(1 - absorcionGlobal);
-            
-            // Crear fila
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${frecuencia}</td>
-                <td>${aislamientoGlobal.toFixed(2)}</td>
-                <td>${aislamientoEfectivo.toFixed(2)}</td>
-            `;
-            tableBody.appendChild(row);
-        });
+                break;
+            }
+        }
         
-    } catch (error) {
-        console.error('Error en cálculo Caso 3:', error);
-        alert('Error en el cálculo: ' + error.message);
+        return translation || key;
+    },
+
+    // Set language and update DOM
+    setLanguage(lang) {
+        if (this.translations[lang]) {
+            this.currentLanguage = lang;
+            this.updateDOM();
+            this.updateLanguageSelector();
+            this.saveLanguagePreference();
+        }
+    },
+
+    // Update all DOM elements with data-i18n attributes
+    updateDOM() {
+        const elements = document.querySelectorAll('[data-i18n]');
+        elements.forEach(element => {
+            const key = element.getAttribute('data-i18n');
+            const translation = this.t(key);
+            
+            if (element.tagName === 'INPUT' && element.hasAttribute('placeholder')) {
+                element.placeholder = translation;
+            } else if (element.hasAttribute('content')) {
+                element.setAttribute('content', translation);
+            } else {
+                element.textContent = translation;
+            }
+        });
+
+        // Update document title and meta description
+        document.title = this.t('app.title');
+        const metaDescription = document.querySelector('meta[name="description"]');
+        if (metaDescription) {
+            metaDescription.setAttribute('content', this.t('app.description'));
+        }
+    },
+
+    // Update language selector button
+    updateLanguageSelector() {
+        const flagMap = { fr: '🇫🇷', en: '🇬🇧', es: '🇪🇸' };
+        const nameMap = { fr: 'Français', en: 'English', es: 'Español' };
+        
+        const currentBtn = document.getElementById('currentLanguage');
+        if (currentBtn) {
+            const flagSpan = currentBtn.querySelector('.flag-icon');
+            const nameSpan = currentBtn.querySelector('span:nth-child(2)');
+            
+            if (flagSpan) flagSpan.textContent = flagMap[this.currentLanguage];
+            if (nameSpan) nameSpan.textContent = nameMap[this.currentLanguage];
+        }
+
+        // Update document language
+        document.documentElement.lang = this.currentLanguage;
+    },
+
+    // Save language preference
+    saveLanguagePreference() {
+        try {
+            localStorage.setItem('wood-calculator-language', this.currentLanguage);
+        } catch (e) {
+            // Silently handle localStorage errors
+        }
+    },
+
+    // Load language preference
+    loadLanguagePreference() {
+        try {
+            const saved = localStorage.getItem('wood-calculator-language');
+            if (saved && this.translations[saved]) {
+                this.currentLanguage = saved;
+            }
+        } catch (e) {
+            // Silently handle localStorage errors
+        }
+    },
+
+    // Format numbers according to locale
+    formatNumber(number, decimals = 1) {
+        if (typeof number !== 'number' || isNaN(number)) return '--';
+        
+        const localeMap = {
+            fr: 'fr-FR',
+            en: 'en-GB', 
+            es: 'es-ES'
+        };
+        
+        return number.toLocaleString(localeMap[this.currentLanguage] || 'fr-FR', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        });
+    }
+};
+
+// Material Properties Database
+const materialProperties = {
+    woodProperties: {
+        C14: { fm_k: 14, ft_0_k: 8, fc_0_k: 16, fv_k: 1.7, rho_k: 290, rho_mean: 350 },
+        C16: { fm_k: 16, ft_0_k: 10, fc_0_k: 17, fv_k: 1.8, rho_k: 310, rho_mean: 370 },
+        C18: { fm_k: 18, ft_0_k: 11, fc_0_k: 18, fv_k: 2.0, rho_k: 320, rho_mean: 380 },
+        C22: { fm_k: 22, ft_0_k: 13, fc_0_k: 20, fv_k: 2.4, rho_k: 340, rho_mean: 410 },
+        C24: { fm_k: 24, ft_0_k: 14, fc_0_k: 21, fv_k: 2.5, rho_k: 350, rho_mean: 420 },
+        C27: { fm_k: 27, ft_0_k: 16, fc_0_k: 22, fv_k: 2.8, rho_k: 360, rho_mean: 430 },
+        GL20: { fm_k: 20, ft_0_k: 16, fc_0_k: 20, fv_k: 3.5, rho_k: 340, rho_mean: 370 },
+        GL22: { fm_k: 22, ft_0_k: 17.6, fc_0_k: 22, fv_k: 3.5, rho_k: 370, rho_mean: 410 },
+        GL24: { fm_k: 24, ft_0_k: 19.2, fc_0_k: 24, fv_k: 3.5, rho_k: 385, rho_mean: 420 },
+        GL24h: { fm_k: 24, ft_0_k: 19.2, fc_0_k: 24, fv_k: 3.5, rho_k: 380, rho_mean: 420 }
+    },
+
+    boltProperties: {
+        '4.6': { fyb: 240, fub: 400, alpha_v: 0.6 },
+        '4.8': { fyb: 320, fub: 400, alpha_v: 0.5 },
+        '5.6': { fyb: 300, fub: 500, alpha_v: 0.6 },
+        '5.8': { fyb: 400, fub: 500, alpha_v: 0.5 },
+        '6.8': { fyb: 480, fub: 600, alpha_v: 0.6 },
+        '8.8': { fyb: 640, fub: 800, alpha_v: 0.6 },
+        '10.9': { fyb: 900, fub: 1000, alpha_v: 0.5 }
+    },
+
+    kmodValues: {
+        '1': { permanent: 0.6, long_term: 0.7, medium_term: 0.8, short_term: 0.9, instantaneous: 1.1 },
+        '2': { permanent: 0.6, long_term: 0.7, medium_term: 0.8, short_term: 0.9, instantaneous: 1.1 },
+        '3': { permanent: 0.5, long_term: 0.55, medium_term: 0.65, short_term: 0.7, instantaneous: 0.9 }
+    }
+};
+
+// Calculation Engine
+class EurocodeCalculator {
+    constructor() {
+        this.gamma_M = 1.3; // Material safety factor
+    }
+
+    // Get kmod value based on service class and load duration
+    getKmod(serviceClass, loadDuration) {
+        return materialProperties.kmodValues[serviceClass.toString()][loadDuration] || 0.8;
+    }
+
+    // Calculate bearing strength according to EC5 §8.5.1.1
+    calculateBearingStrength(woodClass, diameter, angle = 90) {
+        const wood = materialProperties.woodProperties[woodClass];
+        if (!wood) return 0;
+
+        const rho_k = wood.rho_k;
+        const d = diameter;
+        
+        // Basic bearing strength perpendicular to grain
+        const fh_0_k = 0.082 * rho_k * Math.pow(d, -0.3);
+        
+        // Angle factor
+        const alpha = angle * Math.PI / 180;
+        const fh_alpha_k = fh_0_k / (Math.pow(Math.sin(alpha), 2) + Math.pow(Math.cos(alpha), 2));
+        
+        return Math.min(fh_alpha_k, fh_0_k);
+    }
+
+    // Calculate withdrawal capacity for screws
+    calculateWithdrawalCapacity(woodClass, diameter, length, angle = 90) {
+        const wood = materialProperties.woodProperties[woodClass];
+        if (!wood) return 0;
+
+        const rho_k = wood.rho_k;
+        const d = diameter;
+        const lef = length * 0.8; // Effective length
+        
+        // Withdrawal capacity per unit length
+        const fax_k = 0.52 * Math.pow(d, -0.5) * Math.pow(rho_k, 0.8);
+        
+        // Total withdrawal capacity
+        const Fax_Rk = fax_k * Math.PI * d * lef;
+        
+        return Fax_Rk / 1000; // Convert to kN
+    }
+
+    // Calculate rope effect for angled screws
+    calculateRopeEffect(withdrawalCapacity, shearCapacity, angle) {
+        if (angle >= 90) return 0;
+        
+        const alpha = angle * Math.PI / 180;
+        const rope = Math.min(
+            0.25 * withdrawalCapacity * 1000, // Convert back to N for calculation
+            0.5 * shearCapacity * 1000
+        ) * Math.sin(alpha);
+        
+        return rope / 1000; // Convert to kN
+    }
+
+    // Calculate screw resistance
+    calculateScrewResistance(params) {
+        const { woodClass, diameter, length, angle, serviceClass, loadDuration } = params;
+        
+        const kmod = this.getKmod(serviceClass, loadDuration);
+        const bearingStrength = this.calculateBearingStrength(woodClass, diameter, angle);
+        const withdrawalCapacity = this.calculateWithdrawalCapacity(woodClass, diameter, length, angle);
+        
+        // Shear resistance (simplified for single fastener)
+        const wood = materialProperties.woodProperties[woodClass];
+        const fh_k = bearingStrength;
+        const t = Math.min(length * 0.6, 60); // Effective thickness
+        const shearResistance = (fh_k * t * diameter * kmod) / (this.gamma_M * 1000); // kN
+        
+        const ropeEffect = this.calculateRopeEffect(withdrawalCapacity, shearResistance, angle);
+        const totalResistance = shearResistance + ropeEffect;
+        
+        return {
+            bearingStrength: bearingStrength,
+            withdrawalCapacity: withdrawalCapacity,
+            ropeEffect: ropeEffect,
+            shearResistance: shearResistance,
+            totalResistance: totalResistance
+        };
+    }
+
+    // Calculate nail resistance
+    calculateNailResistance(params) {
+        const { woodClass, diameter, length, penetration, serviceClass, loadDuration } = params;
+        
+        const kmod = this.getKmod(serviceClass, loadDuration);
+        const bearingStrength = this.calculateBearingStrength(woodClass, diameter);
+        
+        // Check minimum penetration (8d or 60mm)
+        const minPenetration = Math.max(8 * diameter, 60);
+        const penetrationOK = penetration >= minPenetration;
+        
+        // Shear resistance for nails
+        const fh_k = bearingStrength;
+        const effectiveLength = Math.min(penetration, length);
+        const shearResistance = (fh_k * effectiveLength * diameter * kmod) / (this.gamma_M * 1000); // kN
+        
+        return {
+            bearingStrength: bearingStrength,
+            shearResistance: shearResistance,
+            penetrationOK: penetrationOK,
+            minPenetration: minPenetration
+        };
+    }
+
+    // Calculate bolt resistance  
+    calculateBoltResistance(params) {
+        const { woodClass, diameter, steelGrade, thickness, serviceClass, loadDuration } = params;
+        
+        const kmod = this.getKmod(serviceClass, loadDuration);
+        const bearingStrength = this.calculateBearingStrength(woodClass, diameter);
+        const steel = materialProperties.boltProperties[steelGrade];
+        
+        if (!steel) return { bearingStrength: 0, shearResistance: 0, bearingCapacity: 0 };
+        
+        // Bearing capacity in wood
+        const fh_k = bearingStrength;
+        const bearingCapacity = (fh_k * thickness * diameter * kmod) / (this.gamma_M * 1000); // kN
+        
+        // Shear capacity of bolt
+        const fv_k = steel.alpha_v * steel.fub;
+        const shearCapacity = (fv_k * Math.PI * Math.pow(diameter, 2) / 4 * kmod) / (this.gamma_M * 1000); // kN
+        
+        // Governing resistance
+        const shearResistance = Math.min(bearingCapacity, shearCapacity);
+        
+        return {
+            bearingStrength: bearingStrength,
+            shearResistance: shearResistance,
+            bearingCapacity: bearingCapacity
+        };
     }
 }
 
-// ================================
-// FUNCIONES AUXILIARES
-// ================================
-
-function calculateAll() {
-    const container = document.querySelector('.sheets-container');
-    container.classList.add('calculating');
-    
-    setTimeout(() => {
-        calculateCaso1();
-        calculateCaso2();
-        if (elementosPersonalizados.length > 0) {
-            calculateCaso3();
-        }
-        container.classList.remove('calculating');
-    }, 100);
-}
-
-
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
+// Application Controller
+class WoodCalculatorApp {
+    constructor() {
+        this.calculator = new EurocodeCalculator();
+        this.currentResults = {
+            screws: null,
+            nails: null,
+            bolts: null
         };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
+        
+        this.init();
+    }
+
+    init() {
+        // Load language preference
+        i18n.loadLanguagePreference();
+        i18n.updateDOM();
+        i18n.updateLanguageSelector();
+
+        this.initEventListeners();
+        this.initTabs();
+        this.calculateAll();
+    }
+
+    initEventListeners() {
+        // Language switcher
+        this.initLanguageSwitcher();
+        
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.switchTab(e.target.dataset.tab);
+            });
+        });
+
+        // Form inputs - real-time calculation
+        this.initFormListeners();
+
+        // Project management
+        document.getElementById('saveProject')?.addEventListener('click', () => this.saveProject());
+        document.getElementById('loadProject')?.addEventListener('click', () => this.loadProject());
+        document.getElementById('exportReport')?.addEventListener('click', () => this.exportReport());
+    }
+
+    initLanguageSwitcher() {
+        const languageBtn = document.getElementById('currentLanguage');
+        const languageMenu = document.getElementById('languageMenu');
+        const dropdown = languageBtn?.parentElement;
+
+        // Toggle dropdown
+        languageBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown?.classList.toggle('open');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            dropdown?.classList.remove('open');
+        });
+
+        // Language selection
+        document.querySelectorAll('.language-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const lang = e.currentTarget.dataset.lang;
+                i18n.setLanguage(lang);
+                dropdown?.classList.remove('open');
+                
+                // Trigger recalculation to update results in new language
+                this.calculateAll();
+            });
+        });
+    }
+
+    initFormListeners() {
+        // Screws inputs
+        const screwInputs = ['screwWoodClass', 'screwDiameter', 'screwLength', 'screwAngle', 'screwForce', 'screwServiceClass', 'screwLoadDuration'];
+        screwInputs.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('input', () => this.calculateScrews());
+                element.addEventListener('change', () => this.calculateScrews());
+            }
+        });
+
+        // Nails inputs
+        const nailInputs = ['nailWoodClass', 'nailDiameter', 'nailLength', 'nailPenetration', 'nailForce', 'nailServiceClass', 'nailLoadDuration'];
+        nailInputs.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('input', () => this.calculateNails());
+                element.addEventListener('change', () => this.calculateNails());
+            }
+        });
+
+        // Bolts inputs
+        const boltInputs = ['boltWoodClass', 'boltDiameter', 'boltSteelGrade', 'boltThickness', 'boltForce', 'boltServiceClass', 'boltLoadDuration'];
+        boltInputs.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('input', () => this.calculateBolts());
+                element.addEventListener('change', () => this.calculateBolts());
+            }
+        });
+    }
+
+    initTabs() {
+        // Show first tab by default
+        this.switchTab('screws');
+    }
+
+    switchTab(tabName) {
+        // Update tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-tab="${tabName}"]`)?.classList.add('active');
+
+        // Update tab content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`${tabName}-tab`)?.classList.add('active');
+
+        // Update summary if switching to summary tab
+        if (tabName === 'summary') {
+            this.updateSummary();
+        }
+    }
+
+    calculateScrews() {
+        const params = {
+            woodClass: document.getElementById('screwWoodClass')?.value || 'C24',
+            diameter: parseFloat(document.getElementById('screwDiameter')?.value) || 8,
+            length: parseFloat(document.getElementById('screwLength')?.value) || 120,
+            angle: parseFloat(document.getElementById('screwAngle')?.value) || 90,
+            force: parseFloat(document.getElementById('screwForce')?.value) || 2.5,
+            serviceClass: parseInt(document.getElementById('screwServiceClass')?.value) || 1,
+            loadDuration: document.getElementById('screwLoadDuration')?.value || 'medium_term'
+        };
+
+        const results = this.calculator.calculateScrewResistance(params);
+        this.currentResults.screws = { ...results, appliedForce: params.force };
+
+        this.displayScrewResults(results, params.force);
+    }
+
+    calculateNails() {
+        const params = {
+            woodClass: document.getElementById('nailWoodClass')?.value || 'C24',
+            diameter: parseFloat(document.getElementById('nailDiameter')?.value) || 3.1,
+            length: parseFloat(document.getElementById('nailLength')?.value) || 70,
+            penetration: parseFloat(document.getElementById('nailPenetration')?.value) || 45,
+            force: parseFloat(document.getElementById('nailForce')?.value) || 0.8,
+            serviceClass: parseInt(document.getElementById('nailServiceClass')?.value) || 1,
+            loadDuration: document.getElementById('nailLoadDuration')?.value || 'medium_term'
+        };
+
+        const results = this.calculator.calculateNailResistance(params);
+        this.currentResults.nails = { ...results, appliedForce: params.force };
+
+        this.displayNailResults(results, params.force);
+    }
+
+    calculateBolts() {
+        const params = {
+            woodClass: document.getElementById('boltWoodClass')?.value || 'C24',
+            diameter: parseFloat(document.getElementById('boltDiameter')?.value) || 12,
+            steelGrade: document.getElementById('boltSteelGrade')?.value || '5.8',
+            thickness: parseFloat(document.getElementById('boltThickness')?.value) || 50,
+            force: parseFloat(document.getElementById('boltForce')?.value) || 15,
+            serviceClass: parseInt(document.getElementById('boltServiceClass')?.value) || 1,
+            loadDuration: document.getElementById('boltLoadDuration')?.value || 'medium_term'
+        };
+
+        const results = this.calculator.calculateBoltResistance(params);
+        this.currentResults.bolts = { ...results, appliedForce: params.force };
+
+        this.displayBoltResults(results, params.force);
+    }
+
+    calculateAll() {
+        this.calculateScrews();
+        this.calculateNails();
+        this.calculateBolts();
+        this.updateSummary();
+    }
+
+    displayScrewResults(results, appliedForce) {
+        document.getElementById('screwBearingResult').textContent = i18n.formatNumber(results.bearingStrength, 1);
+        document.getElementById('screwWithdrawalResult').textContent = i18n.formatNumber(results.withdrawalCapacity, 1);
+        document.getElementById('screwRopeResult').textContent = i18n.formatNumber(results.ropeEffect, 1);
+        document.getElementById('screwTotalResult').textContent = i18n.formatNumber(results.totalResistance, 1);
+        
+        const utilization = (appliedForce / results.totalResistance) * 100;
+        document.getElementById('screwUtilizationResult').textContent = i18n.formatNumber(utilization, 1);
+
+        const isCompliant = utilization <= 100;
+        const statusElement = document.getElementById('screwComplianceStatus');
+        statusElement.textContent = i18n.t(isCompliant ? 'status.compliant' : 'status.non_compliant');
+        statusElement.className = `status ${isCompliant ? 'status--success' : 'status--error'}`;
+    }
+
+    displayNailResults(results, appliedForce) {
+        document.getElementById('nailBearingResult').textContent = i18n.formatNumber(results.bearingStrength, 1);
+        document.getElementById('nailShearResult').textContent = i18n.formatNumber(results.shearResistance, 1);
+        
+        const penetrationText = results.penetrationOK ? i18n.t('status.compliant') : i18n.t('status.non_compliant');
+        document.getElementById('nailPenetrationResult').textContent = penetrationText;
+        
+        const utilization = (appliedForce / results.shearResistance) * 100;
+        document.getElementById('nailUtilizationResult').textContent = i18n.formatNumber(utilization, 1);
+
+        const isCompliant = utilization <= 100 && results.penetrationOK;
+        const statusElement = document.getElementById('nailComplianceStatus');
+        statusElement.textContent = i18n.t(isCompliant ? 'status.compliant' : 'status.non_compliant');
+        statusElement.className = `status ${isCompliant ? 'status--success' : 'status--error'}`;
+    }
+
+    displayBoltResults(results, appliedForce) {
+        document.getElementById('boltBearingResult').textContent = i18n.formatNumber(results.bearingStrength, 1);
+        document.getElementById('boltShearResult').textContent = i18n.formatNumber(results.shearResistance, 1);
+        document.getElementById('boltBearingCapacityResult').textContent = i18n.formatNumber(results.bearingCapacity, 1);
+        
+        const utilization = (appliedForce / results.shearResistance) * 100;
+        document.getElementById('boltUtilizationResult').textContent = i18n.formatNumber(utilization, 1);
+
+        const isCompliant = utilization <= 100;
+        const statusElement = document.getElementById('boltComplianceStatus');
+        statusElement.textContent = i18n.t(isCompliant ? 'status.compliant' : 'status.non_compliant');
+        statusElement.className = `status ${isCompliant ? 'status--success' : 'status--error'}`;
+    }
+
+    updateSummary() {
+        const screws = this.currentResults.screws;
+        const nails = this.currentResults.nails;
+        const bolts = this.currentResults.bolts;
+
+        if (screws) {
+            document.getElementById('screwSummaryCapacity').textContent = i18n.formatNumber(screws.totalResistance, 1) + ' kN';
+            const screwUtil = (screws.appliedForce / screws.totalResistance) * 100;
+            document.getElementById('screwSummaryUtilization').textContent = i18n.formatNumber(screwUtil, 1) + '%';
+            const screwStatus = document.getElementById('screwSummaryStatus');
+            const screwCompliant = screwUtil <= 100;
+            screwStatus.textContent = i18n.t(screwCompliant ? 'status.compliant' : 'status.non_compliant');
+            screwStatus.className = `status ${screwCompliant ? 'status--success' : 'status--error'}`;
+        }
+
+        if (nails) {
+            document.getElementById('nailSummaryCapacity').textContent = i18n.formatNumber(nails.shearResistance, 1) + ' kN';
+            const nailUtil = (nails.appliedForce / nails.shearResistance) * 100;
+            document.getElementById('nailSummaryUtilization').textContent = i18n.formatNumber(nailUtil, 1) + '%';
+            const nailStatus = document.getElementById('nailSummaryStatus');
+            const nailCompliant = nailUtil <= 100 && nails.penetrationOK;
+            nailStatus.textContent = i18n.t(nailCompliant ? 'status.compliant' : 'status.non_compliant');
+            nailStatus.className = `status ${nailCompliant ? 'status--success' : 'status--error'}`;
+        }
+
+        if (bolts) {
+            document.getElementById('boltSummaryCapacity').textContent = i18n.formatNumber(bolts.shearResistance, 1) + ' kN';
+            const boltUtil = (bolts.appliedForce / bolts.shearResistance) * 100;
+            document.getElementById('boltSummaryUtilization').textContent = i18n.formatNumber(boltUtil, 1) + '%';
+            const boltStatus = document.getElementById('boltSummaryStatus');
+            const boltCompliant = boltUtil <= 100;
+            boltStatus.textContent = i18n.t(boltCompliant ? 'status.compliant' : 'status.non_compliant');
+            boltStatus.className = `status ${boltCompliant ? 'status--success' : 'status--error'}`;
+        }
+    }
+
+    saveProject() {
+        const projectData = {
+            timestamp: new Date().toISOString(),
+            language: i18n.currentLanguage,
+            screws: {
+                woodClass: document.getElementById('screwWoodClass')?.value,
+                diameter: document.getElementById('screwDiameter')?.value,
+                length: document.getElementById('screwLength')?.value,
+                angle: document.getElementById('screwAngle')?.value,
+                force: document.getElementById('screwForce')?.value,
+                serviceClass: document.getElementById('screwServiceClass')?.value,
+                loadDuration: document.getElementById('screwLoadDuration')?.value
+            },
+            nails: {
+                woodClass: document.getElementById('nailWoodClass')?.value,
+                diameter: document.getElementById('nailDiameter')?.value,
+                length: document.getElementById('nailLength')?.value,
+                penetration: document.getElementById('nailPenetration')?.value,
+                force: document.getElementById('nailForce')?.value,
+                serviceClass: document.getElementById('nailServiceClass')?.value,
+                loadDuration: document.getElementById('nailLoadDuration')?.value
+            },
+            bolts: {
+                woodClass: document.getElementById('boltWoodClass')?.value,
+                diameter: document.getElementById('boltDiameter')?.value,
+                steelGrade: document.getElementById('boltSteelGrade')?.value,
+                thickness: document.getElementById('boltThickness')?.value,
+                force: document.getElementById('boltForce')?.value,
+                serviceClass: document.getElementById('boltServiceClass')?.value,
+                loadDuration: document.getElementById('boltLoadDuration')?.value
+            }
+        };
+
+        const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `wood-calculator-project-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    loadProject() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const projectData = JSON.parse(e.target.result);
+                        this.loadProjectData(projectData);
+                    } catch (error) {
+                        alert('Error loading project file');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+        input.click();
+    }
+
+    loadProjectData(data) {
+        // Load language
+        if (data.language) {
+            i18n.setLanguage(data.language);
+        }
+
+        // Load screws data
+        if (data.screws) {
+            Object.keys(data.screws).forEach(key => {
+                const element = document.getElementById(`screw${key.charAt(0).toUpperCase() + key.slice(1)}`);
+                if (element && data.screws[key] !== undefined) {
+                    element.value = data.screws[key];
+                }
+            });
+        }
+
+        // Load nails data
+        if (data.nails) {
+            Object.keys(data.nails).forEach(key => {
+                const element = document.getElementById(`nail${key.charAt(0).toUpperCase() + key.slice(1)}`);
+                if (element && data.nails[key] !== undefined) {
+                    element.value = data.nails[key];
+                }
+            });
+        }
+
+        // Load bolts data
+        if (data.bolts) {
+            Object.keys(data.bolts).forEach(key => {
+                const element = document.getElementById(`bolt${key.charAt(0).toUpperCase() + key.slice(1)}`);
+                if (element && data.bolts[key] !== undefined) {
+                    element.value = data.bolts[key];
+                }
+            });
+        }
+
+        // Recalculate all
+        this.calculateAll();
+    }
+
+    exportReport() {
+        const reportData = {
+            title: i18n.t('app.title'),
+            timestamp: new Date().toLocaleString(),
+            results: this.currentResults
+        };
+
+        let reportText = `${reportData.title}\n`;
+        reportText += `${i18n.t('summary.title')}\n`;
+        reportText += `${'='.repeat(50)}\n`;
+        reportText += `${i18n.t('app.subtitle')}\n\n`;
+        reportText += `${reportData.timestamp}\n\n`;
+
+        // Add results for each connection type
+        ['screws', 'nails', 'bolts'].forEach(type => {
+            const results = this.currentResults[type];
+            if (results) {
+                reportText += `${i18n.t(`tabs.${type}`)}:\n`;
+                reportText += `${'—'.repeat(20)}\n`;
+                
+                if (type === 'screws') {
+                    reportText += `${i18n.t('results.total_resistance')}: ${i18n.formatNumber(results.totalResistance, 1)} kN\n`;
+                    reportText += `${i18n.t('results.utilization')}: ${i18n.formatNumber((results.appliedForce / results.totalResistance) * 100, 1)}%\n`;
+                } else if (type === 'nails') {
+                    reportText += `${i18n.t('results.shear_resistance')}: ${i18n.formatNumber(results.shearResistance, 1)} kN\n`;
+                    reportText += `${i18n.t('results.utilization')}: ${i18n.formatNumber((results.appliedForce / results.shearResistance) * 100, 1)}%\n`;
+                } else if (type === 'bolts') {
+                    reportText += `${i18n.t('results.shear_resistance')}: ${i18n.formatNumber(results.shearResistance, 1)} kN\n`;
+                    reportText += `${i18n.t('results.utilization')}: ${i18n.formatNumber((results.appliedForce / results.shearResistance) * 100, 1)}%\n`;
+                }
+                reportText += '\n';
+            }
+        });
+
+        reportText += `\n${i18n.t('footer.disclaimer')}`;
+
+        const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `wood-calculator-report-${new Date().toISOString().split('T')[0]}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
 }
 
-
-function calcularNivelGlobalPonderadoA(espectro, aislamientoGlobal) {
-  const PONDERACION_A = { 
-    '63': -26, '125': -16, '250': -9, 
-    '500': -3, '1k': 0, '2k': 1, '4k': 1 
-  };
-
-  let sumaEnergia = 0;
-  const frecuencias = ['63', '125', '250', '500', '1k', '2k', '4k'];
-
-  frecuencias.forEach(freq => {
-    const nivelReceptor = espectro[freq] - aislamientoGlobal[freq];
-    const nivelPonderadoA = nivelReceptor + PONDERACION_A[freq];
-    sumaEnergia += Math.pow(10, nivelPonderadoA / 10);
-  });
-
-  return (10 * Math.log10(sumaEnergia)).toFixed(1);
-}
-
-
-
-
-
-// script.js
-const PONDERACION_A = {
-  '63': -26,
-  '125': -16,
-  '250': -9,
-  '500': -3,
-  '1k': 0,
-  '2k': 1,
-  '4k': 1
-};
-
-function calcularNivelGlobal() {
-  try {
-    const emisor1 = obtenerEspectro('emisor1');
-    const emisor2 = obtenerEspectro('emisor2');
-    const aislamiento = obtenerAislamientoGlobal();
-
-    const dBA1 = calcularNivelPonderadoA(emisor1, aislamiento);
-    const dBA2 = calcularNivelPonderadoA(emisor2, aislamiento);
-
-    mostrarResultado(dBA1, dBA2);
-  } catch (error) {
-    console.error(error);
-    document.getElementById('resultado').innerHTML = `
-      <div class="error">⚠️ Error: ${error.message}</div>
-    `;
-  }
-}
-
-function obtenerEspectro(emisor) {
-  const frecuencias = ['63', '125', '250', '500', '1k', '2k', '4k'];
-  const espectro = {};
-  
-  frecuencias.forEach(freq => {
-    const valor = parseFloat(document.getElementById(`${emisor}-${freq}`).value);
-    if (isNaN(valor)) throw new Error(`Valor inválido en ${emisor} - ${freq} Hz`);
-    espectro[freq] = valor;
-  });
-  
-  return espectro;
-}
-
-function obtenerAislamientoGlobal() {
-  // Implementa aquí la lógica para obtener R_global de tu hoja de cálculo
-  return {
-    '63': 19.8, '125': 25.1, '250': 30.6, '500': 36.2, '1k': 41.9, '2k': 47.7, '4k': 53.6
-  };
-}
-
-function calcularNivelPonderadoA(emisor, aislamiento) {
-  let sumaEnergia = 0;
-  const frecuencias = Object.keys(emisor);
-
-  frecuencias.forEach(freq => {
-    const nivelReceptor = emisor[freq] - aislamiento[freq];
-    const nivelPonderadoA = nivelReceptor + PONDERACION_A[freq];
-    sumaEnergia += Math.pow(10, nivelPonderadoA / 10); // Conversión a energía
-  });
-
-  const nivelGlobal = 10 * Math.log10(sumaEnergia); // Conversión a dB
-  return nivelGlobal.toFixed(1); // Redondeo a 1 decimal
-}
-
-function mostrarResultado(dBA1, dBA2) {
-  document.getElementById('resultado').innerHTML = `
-    <div class="resultado">
-      <h3>Resultados:</h3>
-      <p>Espectro Emisor 1: <strong>${dBA1} dBA</strong></p>
-      <p>Espectro Emisor 2: <strong>${dBA2} dBA</strong></p>
-    </div>
-  `;
-}
-
-
-// Funciones globales para eventos inline
-window.updateElement = updateElement;
-window.removeElement = removeElement;
+// Initialize application when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    window.woodCalculatorApp = new WoodCalculatorApp();
+});
