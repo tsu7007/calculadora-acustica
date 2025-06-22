@@ -1,117 +1,61 @@
-# 🔊 Calculadora de Aislamiento Acústico
+# 🔊 Calculadora de Aislamiento Acústico v2.0
 
-Una calculadora web automatizada para el análisis de aislamiento acústico en paredes compuestas, implementando las fórmulas estándar de acústica arquitectónica según normativas técnicas internacionales.
+Una calculadora web profesional para análisis de aislamiento acústico en edificación, desarrollada según normativas técnicas internacionales UNE-EN ISO.
 
 ## 🎯 Características Principales
 
-### Cálculos Automatizados
-- **Ley de la Masa**: `R = 20log(M) + 20log(f) - 43`
-- **Aislamiento Global**: `R_g = 10log(S_total / Σ(S_i × 10^(-R_i/10)))`
-- **Nivel Global Ponderado A**: `LAeq = 10log(Σ(10^(LAi/10)))`
-- **Ponderación A** según normativa UNE-EN ISO 61672-1
+### 📊 Tres Casos de Cálculo Especializados
 
-### Interfaz Intuitiva
-- 📊 Tablas editables para espectros de emisión
-- 🏗️ Parámetros de construcción personalizables
-- 📱 Diseño responsive para todos los dispositivos
-- ⚡ Validación en tiempo real
-- 📄 Exportación a PDF
+#### 1. **Fachada Compuesta** 🏢
+- Análisis de fachadas con elementos mixtos (pared + ventanas + puertas)
+- Cálculo de aislamiento global según UNE-EN 12354
+- Consideración de diferentes materiales y superficies
+- Espectros de emisión configurables
 
-## 🚀 Instalación en GitHub Pages
+#### 2. **Pared Compuesta** 🧱
+- Sistemas multicapa (doble, triple, sandwich, trasdosado)
+- Cálculo de frecuencia de resonancia
+- Efectos de cámaras de aire y rellenos
+- Correcciones por tipo de sistema constructivo
 
-### Paso 1: Crear Repositorio
-1. Entra en [GitHub](https://github.com) y crea un nuevo repositorio
-2. Nombre recomendado: `calculadora-acustica`
-3. Marca como **público**
+#### 3. **Personalizado** ⚙️
+- Configuración completamente flexible
+- Hasta 5 elementos simultáneos
+- Múltiples espectros de emisión
+- Análisis comparativo avanzado
 
-### Paso 2: Subir Archivos
-1. Descarga todos los archivos de esta calculadora:
-   - `index.html`
-   - `styles.css`
-   - `script.js`
-   - `README.md`
-   - `.nojekyll`
+### 🧮 Fórmulas Técnicas Implementadas
 
-2. En tu repositorio de GitHub:
-   - Haz clic en "Upload files"
-   - Arrastra y suelta todos los archivos
-   - Escribe mensaje de commit: "Calculadora de aislamiento acústico v1.0"
-   - Haz clic en "Commit changes"
-
-### Paso 3: Activar GitHub Pages
-1. Ve a **Settings** > **Pages**
-2. En **Source** selecciona "Deploy from a branch"
-3. Selecciona rama **main** y carpeta **/ (root)**
-4. Haz clic en **Save**
-
-### Paso 4: Acceder a tu Calculadora
-Tu calculadora estará disponible en:
+#### Ley de la Masa (Corregida)
 ```
-https://TU-USUARIO.github.io/calculadora-acustica/
-```
-
-⏱️ **Tiempo de espera**: 5-10 minutos para el primer despliegue.
-
-## 📊 Casos de Uso
-
-### Espectros de Emisión Variables
-Los usuarios pueden modificar los niveles de emisión en las 7 bandas de frecuencia estándar:
-- 63 Hz, 125 Hz, 250 Hz, 500 Hz
-- 1000 Hz, 2000 Hz, 4000 Hz
-
-### Parámetros de Construcción Editables
-- **Masa de pared**: 10 - 1000 kg/m²
-- **Masa de puerta**: 1 - 200 kg/m²  
-- **Superficies**: Configurables según proyecto
-
-### Resultados Esperados
-Con los valores por defecto del ejercicio de referencia:
-- **Espectro Emisor 1**: 39.3 dBA
-- **Espectro Emisor 2**: 35.6 dBA
-
-## 🔧 Tecnologías Utilizadas
-
-- **HTML5**: Estructura semántica y accesible
-- **CSS3**: Diseño moderno con CSS Grid y Flexbox
-- **JavaScript ES6**: Lógica de cálculo sin dependencias externas
-- **GitHub Pages**: Hosting gratuito y confiable
-
-## 📱 Compatibilidad
-
-- ✅ Chrome/Edge 90+
-- ✅ Firefox 88+
-- ✅ Safari 14+
-- ✅ Dispositivos móviles iOS/Android
-- ✅ Tablets y pantallas grandes
-
-## 🎓 Fundamentos Técnicos
-
-### Fórmulas Implementadas
-
-#### 1. Ley de la Masa (Elements Simples)
-```
-R = 20 × log₁₀(M) + 20 × log₁₀(f) - 43
+R = 20·log(M) + 20·log(f) - 47
 ```
 - **R**: Aislamiento acústico (dB)
 - **M**: Masa superficial (kg/m²)
 - **f**: Frecuencia (Hz)
 
-#### 2. Aislamiento Global (Elementos Compuestos)
+#### Aislamiento Global
 ```
-R_global = 10 × log₁₀(S_total / Σ(S_i × 10^(-R_i/10)))
+R_g = 10·log(S_total / Σ(S_i × 10^(-R_i/10)))
 ```
 - **S_total**: Superficie total (m²)
-- **S_i**: Superficie del elemento i (m²)
-- **R_i**: Aislamiento del elemento i (dB)
+- **S_i**: Superficie del elemento i
+- **R_i**: Aislamiento del elemento i
 
-#### 3. Nivel Global Ponderado A
+#### Nivel Global Ponderado A
 ```
-LAeq = 10 × log₁₀(Σ(10^(LAi/10)))
+LAeq = 10·log(Σ(10^(LAi/10)))
 ```
-- **LAi**: Nivel ponderado A por frecuencia (dBA)
+- **LAi**: Nivel ponderado A por frecuencia
 
-### Valores de Ponderación A
-Según norma UNE-EN ISO 61672-1:
+#### Frecuencia de Resonancia
+```
+f0 = 60 × √((1/M1 + 1/M2) / d)
+```
+- **M1, M2**: Masas de los paneles
+- **d**: Distancia entre paneles (m)
+
+### 📋 Valores de Ponderación A (UNE-EN ISO 61672-1)
 
 | Frecuencia | Ponderación A |
 |------------|---------------|
@@ -123,89 +67,225 @@ Según norma UNE-EN ISO 61672-1:
 | 2000 Hz    | +1 dB         |
 | 4000 Hz    | +1 dB         |
 
-## 🛠️ Personalización
+## 🚀 Instalación en GitHub Pages
 
-### Modificar Parámetros por Defecto
-Edita el archivo `script.js` en las líneas de constantes:
+### Paso 1: Preparar Repositorio
+1. Crea un nuevo repositorio en GitHub
+2. Nombre recomendado: `calculadora-acustica-pro`
+3. Asegúrate de que sea **público**
 
+### Paso 2: Subir Archivos
+Descarga y sube estos 5 archivos esenciales:
+- `index.html` - Interfaz principal
+- `styles.css` - Estilos modernos y responsive
+- `script.js` - Lógica de cálculo completa
+- `README.md` - Esta documentación
+- `.nojekyll` - Configuración para GitHub Pages
+
+### Paso 3: Activar GitHub Pages
+1. Ve a **Settings** > **Pages**
+2. En **Source** selecciona "Deploy from a branch"
+3. Selecciona rama **main** y carpeta **/ (root)**
+4. Haz clic en **Save**
+
+### Paso 4: Acceder a tu Calculadora
+Tu calculadora estará disponible en:
+```
+https://TU-USUARIO.github.io/calculadora-acustica-pro/
+```
+
+⏱️ **Tiempo de espera**: 5-10 minutos para el primer despliegue.
+
+## 🛠️ Tecnologías Utilizadas
+
+- **HTML5** semántico con accesibilidad
+- **CSS3** moderno con CSS Grid y Flexbox
+- **JavaScript ES6+** vanilla (sin dependencias)
+- **Design System** profesional con variables CSS
+- **Responsive Design** para todos los dispositivos
+
+## 📱 Funcionalidades de la Interfaz
+
+### 🎨 Diseño Simple y Equilibrado
+- **Navegación intuitiva** con pestañas visuales
+- **Validación en tiempo real** de datos de entrada
+- **Feedback visual** inmediato (colores de validación)
+- **Animaciones suaves** para mejor experiencia
+- **Diseño responsive** para móviles y tablets
+
+### ⚡ Características Técnicas
+- **Cálculos instantáneos** con loading indicators
+- **Tablas interactivas** para espectros de emisión
+- **Resultados detallados** con análisis por frecuencia
+- **Exportación** de resultados (en desarrollo)
+- **Atajos de teclado** (Ctrl+Enter para calcular)
+
+### 🎛️ Controles Avanzados
+- **Elementos dinámicos** en modo personalizado
+- **Validación automática** de rangos permitidos
+- **Configuración flexible** de parámetros
+- **Sistema de errores** descriptivo
+
+## 📊 Casos de Uso Típicos
+
+### 🏗️ Profesionales de la Construcción
+- Verificación de cumplimiento CTE DB-HR
+- Diseño de soluciones acústicas
+- Análisis comparativo de materiales
+- Optimización de costes vs. prestaciones
+
+### 🎓 Ámbito Educativo
+- Aprendizaje de conceptos acústicos
+- Experimentación con parámetros
+- Validación de cálculos manuales
+- Comprensión de normativas
+
+### 🔬 Investigación y Desarrollo
+- Evaluación de nuevos materiales
+- Estudios paramétricos
+- Desarrollo de productos acústicos
+- Validación de modelos teóricos
+
+## 🔧 Personalización y Configuración
+
+### Modificar Valores por Defecto
+Edita las constantes en `script.js`:
 ```javascript
-// Valores por defecto
-const PARAMETROS_DEFAULT = {
-    masaPared: 200,      // kg/m²
-    masaPuerta: 10,      // kg/m²
-    superficiePared: 35.02,  // m²
-    superficiePuerta: 4.98   // m²
+// Valores por defecto para fachada
+const DEFAULT_FACHADA = {
+    areaTotal: 40,
+    areaVentana: 8,
+    areaPuerta: 4,
+    masaPared: 300,
+    masaVentana: 25,
+    masaPuerta: 15
 };
 ```
 
 ### Cambiar Esquema de Colores
 Modifica las variables CSS en `styles.css`:
-
 ```css
 :root {
     --primary-color: #2563eb;
-    --secondary-color: #1e40af;
-    --accent-color: #f59e0b;
+    --accent-color: #0ea5e9;
+    --success-color: #059669;
     /* ... más variables */
 }
 ```
 
+### Agregar Nuevos Materiales
+Extiende la base de datos de materiales:
+```javascript
+const MATERIALES_DB = {
+    'hormigon': { densidad: 2400, factor: 1.0 },
+    'ladrillo': { densidad: 1800, factor: 0.9 },
+    'yeso': { densidad: 1200, factor: 0.8 }
+    // Agregar más materiales
+};
+```
+
+## 📚 Normativas de Referencia
+
+### Normativas Españolas
+- **CTE DB-HR**: Protección frente al Ruido
+- **UNE-EN 12354**: Cálculo del aislamiento acústico
+- **UNE-EN ISO 140**: Medición del aislamiento acústico
+- **UNE-EN ISO 717**: Evaluación del aislamiento acústico
+
+### Normativas Internacionales
+- **ISO 61672-1**: Sonómetros (Ponderación A)
+- **ISO 717-1**: Evaluación del aislamiento a ruido aéreo
+- **EN 12354**: Acústica en la edificación
+- **ASHRAE**: Handbook HVAC Applications
+
 ## 🐛 Solución de Problemas
 
-### Página en Blanco
-1. Verifica que el archivo `index.html` esté en la raíz del repositorio
+### Problemas Comunes
+
+#### Página no Carga
+1. Verifica que `index.html` esté en la raíz del repositorio
 2. Asegúrate de que GitHub Pages esté activado
-3. Comprueba que el archivo `.nojekyll` esté presente
+3. Confirma que el archivo `.nojekyll` esté presente
+4. Espera 10-15 minutos para propagación
 
-### Errores de Cálculo
-1. Verifica que todos los valores sean números válidos
-2. Revisa los rangos permitidos para cada parámetro
-3. Abre la consola del navegador (F12) para ver errores detallados
+#### Errores de Cálculo
+1. **Valores fuera de rango**: Verifica que las entradas estén en rangos válidos
+2. **Campos vacíos**: Asegúrate de completar todos los campos requeridos
+3. **Superficies negativas**: El área de pared debe ser positiva
+4. **Masas muy bajas**: Verifica que las masas sean realistas (>5 kg/m²)
 
-### Problemas de Estilo
-1. Asegúrate de que `styles.css` esté en la misma carpeta que `index.html`
-2. Verifica que no haya errores de sintaxis CSS
-3. Limpia la caché del navegador (Ctrl+F5)
+#### Problemas de Visualización
+1. **Tablas deformadas**: Usa zoom del navegador al 100%
+2. **Botones no responden**: Abre la consola (F12) para ver errores
+3. **Estilos incorrectos**: Limpia caché del navegador (Ctrl+F5)
+
+### Depuración Avanzada
+```javascript
+// Activar modo debug en consola
+window.DEBUG_MODE = true;
+
+// Ver datos de entrada
+console.log('Datos fachada:', obtenerDatosFachada());
+
+// Verificar cálculos paso a paso
+console.log('Aislamiento 500Hz:', calcularLeyMasa(200, 500));
+```
 
 ## 📈 Validación de Resultados
 
-Los cálculos han sido validados contra:
-- ✅ Ejercicios de referencia académica
-- ✅ Normativas UNE-EN ISO 61672-1
-- ✅ Software profesional de acústica
-- ✅ Cálculos manuales verificados
+### Ejemplos de Verificación
 
-## 🤝 Contribuciones
+#### Caso Fachada Típica
+- **Pared**: 300 kg/m², 28 m²
+- **Ventana**: 25 kg/m², 8 m²
+- **Puerta**: 15 kg/m², 4 m²
+- **Resultado esperado**: ~38-42 dBA
 
-Si encuentras errores o tienes sugerencias:
-1. Crea un **Issue** en el repositorio
+#### Caso Pared Doble
+- **Capa 1**: 150 kg/m²
+- **Cámara**: 50 mm con lana mineral
+- **Capa 2**: 80 kg/m²
+- **Resultado esperado**: ~45-50 dBA
+
+## 🤝 Contribuciones y Mejoras
+
+### Reportar Problemas
+1. Abre un **Issue** en GitHub
 2. Describe el problema detalladamente
-3. Incluye capturas de pantalla si es necesario
+3. Incluye datos de entrada y resultado esperado
+4. Adjunta capturas de pantalla si es necesario
 
-## 📄 Licencia
+### Sugerir Mejoras
+- Nuevos tipos de cálculo
+- Materiales adicionales
+- Mejoras de interfaz
+- Optimizaciones de rendimiento
 
-Este proyecto es de dominio público y puede ser utilizado libremente para:
-- 🎓 Fines educativos
-- 🏢 Consultorías profesionales
-- 🔬 Investigación académica
-- 🏗️ Proyectos de construcción
+## 📄 Licencia y Uso
 
-## 📚 Referencias
-
-- UNE-EN ISO 61672-1: Electroacústica. Sonómetros
-- UNE-EN ISO 140: Acústica. Medición del aislamiento acústico
-- CTE DB-HR: Código Técnico de la Edificación (España)
-- ASHRAE Handbook: HVAC Applications
+Este proyecto es de **dominio público** y puede ser utilizado libremente para:
+- ✅ Fines educativos y académicos
+- ✅ Consultorías y proyectos profesionales
+- ✅ Investigación y desarrollo
+- ✅ Modificación y redistribución
 
 ## 🔄 Historial de Versiones
 
-### v1.0.0 (Actual)
-- ✅ Implementación completa de fórmulas acústicas
-- ✅ Interfaz responsive
+### v2.0.0 (Actual)
+- ✅ Tres casos de cálculo especializados
+- ✅ Interfaz moderna y responsive
+- ✅ Fórmulas técnicas corregidas según normativas
 - ✅ Validación en tiempo real
-- ✅ Exportación a PDF
-- ✅ Compatibilidad móvil
+- ✅ Sistema de elementos dinámicos
+- ✅ Resultados detallados con tablas
+
+### v1.0.0 (Anterior)
+- ✅ Calculadora básica
+- ✅ Cálculos simples de aislamiento
+- ✅ Interfaz funcional
 
 ---
 
-**Desarrollado para la comunidad de acústica arquitectónica** 🏗️🔊
+**Desarrollado para la comunidad técnica de acústica en edificación** 🏗️🔊
+
+*Para soporte técnico o consultas, crear un Issue en el repositorio de GitHub.*

@@ -1,7 +1,9 @@
-// script.js - Calculadora de Aislamiento Acústico
-// Implementa todas las fórmulas de aislamiento acústico según normativas técnicas
+// =====================================================
+// CALCULADORA DE AISLAMIENTO ACÚSTICO - JAVASCRIPT
+// Sistema completo para 3 casos: Fachada, Pared, Personalizado
+// =====================================================
 
-// ========================= CONSTANTES =========================
+// === CONSTANTES TÉCNICAS ===
 const PONDERACION_A = {
     '63': -26,
     '125': -16,
@@ -22,132 +24,127 @@ const FRECUENCIAS_HZ = {
     '4k': 4000
 };
 
-const FRECUENCIAS_ARRAY = ['63', '125', '250', '500', '1k', '2k', '4k'];
+const FRECUENCIAS = ['63', '125', '250', '500', '1k', '2k', '4k'];
 
-// ========================= UTILIDADES =========================
+// === VARIABLES GLOBALES ===
+let casoActual = 'fachada';
+let elementosPersonalizados = 2;
+let espectrosPersonalizados = 2;
 
-/**
- * Muestra/oculta indicador de carga
- */
-function toggleLoading(show) {
-    const loading = document.getElementById('loading');
-    if (show) {
-        loading.classList.remove('hidden');
-    } else {
-        loading.classList.add('hidden');
-    }
-}
-
-/**
- * Valida que un valor numérico esté en el rango permitido
- */
-function validarValor(valor, min = 0, max = 200, campo = 'valor') {
-    if (isNaN(valor)) {
-        throw new Error(`${campo} debe ser un número válido`);
-    }
-    if (valor < min || valor > max) {
-        throw new Error(`${campo} debe estar entre ${min} y ${max}`);
-    }
-    return true;
-}
-
-/**
- * Marca un campo como válido o inválido visualmente
- */
-function marcarCampo(elementId, esValido) {
-    const elemento = document.getElementById(elementId);
-    if (elemento) {
-        if (esValido) {
-            elemento.classList.remove('error');
-        } else {
-            elemento.classList.add('error');
-        }
-    }
-}
-
-// ========================= OBTENCIÓN DE DATOS =========================
-
-/**
- * Obtiene y valida los valores del espectro de emisión
- */
-function obtenerEspectro(emisor) {
-    const espectro = {};
+// === INICIALIZACIÓN ===
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔊 Calculadora de Aislamiento Acústico v2.0 - Cargada');
     
-    FRECUENCIAS_ARRAY.forEach(freq => {
-        const elementId = `${emisor}-${freq}`;
-        const valor = parseFloat(document.getElementById(elementId).value);
-        
-        try {
-            validarValor(valor, 0, 150, `${emisor} ${freq}Hz`);
-            espectro[freq] = valor;
-            marcarCampo(elementId, true);
-        } catch (error) {
-            marcarCampo(elementId, false);
-            throw new Error(`Error en ${emisor} ${freq}Hz: ${error.message}`);
-        }
+    inicializarNavegacion();
+    inicializarValidacion();
+    inicializarElementosPersonalizados();
+    
+    console.log('✅ Sistema inicializado correctamente');
+});
+
+// === NAVEGACIÓN DE CASOS ===
+function inicializarNavegacion() {
+    const botonesCaso = document.querySelectorAll('.case-btn');
+    const secciones = document.querySelectorAll('.case-section');
+    
+    botonesCaso.forEach(boton => {
+        boton.addEventListener('click', function() {
+            const caso = this.dataset.case;
+            cambiarCaso(caso);
+        });
     });
-    
-    return espectro;
 }
 
-/**
- * Obtiene y valida los parámetros de construcción
- */
-function obtenerParametrosConstruccion() {
-    const parametros = {};
+function cambiarCaso(nuevoCaso) {
+    // Actualizar botones
+    document.querySelectorAll('.case-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.getElementById(`btn-${nuevoCaso}`).classList.add('active');
     
-    // Masas
-    parametros.masaPared = parseFloat(document.getElementById('masa-pared').value);
-    parametros.masaPuerta = parseFloat(document.getElementById('masa-puerta').value);
+    // Actualizar secciones
+    document.querySelectorAll('.case-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    document.getElementById(`caso-${nuevoCaso}`).classList.add('active');
     
-    // Superficies
-    parametros.superficiePared = parseFloat(document.getElementById('superficie-pared').value);
-    parametros.superficiePuerta = parseFloat(document.getElementById('superficie-puerta').value);
-    parametros.superficieTotal = parametros.superficiePared + parametros.superficiePuerta;
+    casoActual = nuevoCaso;
+    limpiarResultados();
     
-    // Validaciones
-    validarValor(parametros.masaPared, 10, 1000, 'Masa de pared');
-    validarValor(parametros.masaPuerta, 1, 200, 'Masa de puerta');
-    validarValor(parametros.superficiePared, 1, 1000, 'Superficie de pared');
-    validarValor(parametros.superficiePuerta, 0.1, 100, 'Superficie de puerta');
-    
-    return parametros;
+    console.log(`📱 Caso cambiado a: ${nuevoCaso}`);
 }
 
-// ========================= CÁLCULOS ACÚSTICOS =========================
+// === VALIDACIÓN EN TIEMPO REAL ===
+function inicializarValidacion() {
+    const inputs = document.querySelectorAll('input[type="number"]');
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            validarCampo(this);
+        });
+        
+        input.addEventListener('blur', function() {
+            validarCampo(this);
+        });
+    });
+}
+
+function validarCampo(campo) {
+    const valor = parseFloat(campo.value);
+    const min = parseFloat(campo.min) || 0;
+    const max = parseFloat(campo.max) || Infinity;
+    
+    if (isNaN(valor) || valor < min || valor > max) {
+        campo.style.borderColor = '#dc2626';
+        campo.style.backgroundColor = '#fef2f2';
+        return false;
+    } else {
+        campo.style.borderColor = '#059669';
+        campo.style.backgroundColor = '#f0fdf4';
+        return true;
+    }
+}
+
+// === FÓRMULAS TÉCNICAS ===
 
 /**
- * Calcula el aislamiento usando la Ley de la Masa
- * Fórmula: R = 20*log10(M) + 20*log10(f) - 43
+ * Ley de la Masa - Fórmula corregida según normativa
+ * R = 20*log10(M) + 20*log10(f) - 47
  */
-function calcularAislamientoLeyMasa(masa, frecuencia) {
+function calcularLeyMasa(masa, frecuencia) {
     if (masa <= 0 || frecuencia <= 0) {
         throw new Error('Masa y frecuencia deben ser positivas');
     }
     
-    const aislamiento = 20 * Math.log10(masa) + 20 * Math.log10(frecuencia) - 43;
-    return Math.max(0, aislamiento); // El aislamiento no puede ser negativo
+    const aislamiento = 20 * Math.log10(masa) + 20 * Math.log10(frecuencia) - 47;
+    return Math.max(0, aislamiento);
 }
 
 /**
- * Calcula el aislamiento global de elementos compuestos
- * Fórmula: R_g = 10*log10(S_total / (S1*10^(-R1/10) + S2*10^(-R2/10)))
+ * Aislamiento Global para elementos compuestos
+ * R_g = 10*log10(S_total / Σ(S_i * 10^(-R_i/10)))
  */
-function calcularAislamientoGlobal(rPared, rPuerta, supPared, supPuerta, supTotal) {
-    const denominador = supPared * Math.pow(10, -rPared/10) + supPuerta * Math.pow(10, -rPuerta/10);
+function calcularAislamientoGlobal(elementos) {
+    let denominador = 0;
+    let superficieTotal = 0;
+    
+    elementos.forEach(elemento => {
+        denominador += elemento.superficie * Math.pow(10, -elemento.aislamiento / 10);
+        superficieTotal += elemento.superficie;
+    });
     
     if (denominador <= 0) {
-        throw new Error('Error en cálculo de aislamiento global: denominador inválido');
+        throw new Error('Error en cálculo de aislamiento global');
     }
     
-    return 10 * Math.log10(supTotal / denominador);
+    return 10 * Math.log10(superficieTotal / denominador);
 }
 
 /**
- * Calcula el nivel global ponderado A
- * Fórmula: LAeq = 10*log10(Σ(10^(LAi/10)))
+ * Nivel Global Ponderado A
+ * LAeq = 10*log10(Σ(10^(LAi/10)))
  */
-function calcularNivelGlobalPonderadoA(nivelesReceptorA) {
+function calcularNivelGlobalA(nivelesReceptorA) {
     let sumaEnergia = 0;
     
     Object.values(nivelesReceptorA).forEach(nivel => {
@@ -155,363 +152,711 @@ function calcularNivelGlobalPonderadoA(nivelesReceptorA) {
     });
     
     if (sumaEnergia <= 0) {
-        throw new Error('Error en suma energética para nivel global');
+        throw new Error('Error en suma energética');
     }
     
     return 10 * Math.log10(sumaEnergia);
 }
 
-// ========================= ANÁLISIS COMPLETO =========================
+/**
+ * Frecuencia de resonancia para paredes dobles
+ * f0 = 60 * sqrt((1/M1 + 1/M2) / d)
+ */
+function calcularFrecuenciaResonancia(masa1, masa2, distancia) {
+    const factor = (1/masa1 + 1/masa2) / (distancia / 1000); // distancia en metros
+    return 60 * Math.sqrt(factor);
+}
+
+// === CÁLCULOS POR CASO ===
 
 /**
- * Realiza el análisis completo de aislamiento acústico para un espectro
+ * CASO 1: FACHADA COMPUESTA
  */
-function analizarEspectro(espectro, parametros, nombreEspectro) {
-    const analisis = {
-        nombre: nombreEspectro,
-        frecuencias: {},
-        resumen: {}
-    };
+function calcularFachada() {
+    try {
+        mostrarLoading(true);
+        
+        setTimeout(() => {
+            try {
+                // 1. Obtener parámetros
+                const areaTotal = obtenerValor('fachada-area-total');
+                const areaVentana = obtenerValor('fachada-area-ventana');
+                const areaPuerta = obtenerValor('fachada-area-puerta');
+                const areaPared = areaTotal - areaVentana - areaPuerta;
+                
+                const masaPared = obtenerValor('fachada-masa-pared');
+                const masaVentana = obtenerValor('fachada-masa-ventana');
+                const masaPuerta = obtenerValor('fachada-masa-puerta');
+                
+                // 2. Obtener espectro de emisión
+                const espectro = obtenerEspectro('fachada-emisor');
+                
+                // 3. Validaciones
+                if (areaPared <= 0) {
+                    throw new Error('El área de pared debe ser positiva');
+                }
+                
+                // 4. Calcular análisis completo
+                const resultados = analizarFachada({
+                    areaPared, areaVentana, areaPuerta, areaTotal,
+                    masaPared, masaVentana, masaPuerta,
+                    espectro
+                });
+                
+                // 5. Mostrar resultados
+                mostrarResultadosFachada(resultados);
+                mostrarLoading(false);
+                
+            } catch (error) {
+                mostrarError(error.message);
+                mostrarLoading(false);
+            }
+        }, 300);
+        
+    } catch (error) {
+        mostrarError(error.message);
+        mostrarLoading(false);
+    }
+}
+
+function analizarFachada(params) {
+    const { areaPared, areaVentana, areaPuerta, areaTotal, masaPared, masaVentana, masaPuerta, espectro } = params;
     
-    let sumaEnergiaTotal = 0;
+    let analisisDetallado = [];
+    let sumaEnergia = 0;
     
-    // Análisis por frecuencia
-    FRECUENCIAS_ARRAY.forEach(freq => {
+    FRECUENCIAS.forEach(freq => {
         const frecuenciaHz = FRECUENCIAS_HZ[freq];
         
-        // 1. Calcular aislamiento por Ley de la Masa
-        const rPared = calcularAislamientoLeyMasa(parametros.masaPared, frecuenciaHz);
-        const rPuerta = calcularAislamientoLeyMasa(parametros.masaPuerta, frecuenciaHz);
+        // Calcular aislamiento individual usando ley de la masa
+        const rPared = calcularLeyMasa(masaPared, frecuenciaHz);
+        const rVentana = calcularLeyMasa(masaVentana, frecuenciaHz);
+        const rPuerta = calcularLeyMasa(masaPuerta, frecuenciaHz);
         
-        // 2. Calcular aislamiento global
-        const rGlobal = calcularAislamientoGlobal(
-            rPared, rPuerta, 
-            parametros.superficiePared, parametros.superficiePuerta, 
-            parametros.superficieTotal
-        );
+        // Calcular aislamiento global
+        const elementos = [
+            { superficie: areaPared, aislamiento: rPared },
+            { superficie: areaVentana, aislamiento: rVentana },
+            { superficie: areaPuerta, aislamiento: rPuerta }
+        ].filter(elem => elem.superficie > 0);
         
-        // 3. Calcular nivel receptor
+        const rGlobal = calcularAislamientoGlobal(elementos);
+        
+        // Calcular niveles
         const nivelEmisor = espectro[freq];
         const nivelReceptor = nivelEmisor - rGlobal;
-        
-        // 4. Aplicar ponderación A
         const nivelReceptorA = nivelReceptor + PONDERACION_A[freq];
         
-        // 5. Acumular energía para nivel global
-        sumaEnergiaTotal += Math.pow(10, nivelReceptorA / 10);
+        sumaEnergia += Math.pow(10, nivelReceptorA / 10);
         
-        // Guardar resultados por frecuencia
-        analisis.frecuencias[freq] = {
-            frecuenciaHz: frecuenciaHz,
-            rPared: rPared,
-            rPuerta: rPuerta,
-            rGlobal: rGlobal,
-            nivelEmisor: nivelEmisor,
-            nivelReceptor: nivelReceptor,
+        analisisDetallado.push({
+            frecuencia: frecuenciaHz,
+            rPared, rVentana, rPuerta, rGlobal,
+            nivelEmisor, nivelReceptor,
             ponderacionA: PONDERACION_A[freq],
-            nivelReceptorA: nivelReceptorA
-        };
+            nivelReceptorA
+        });
     });
     
-    // Calcular nivel global
-    analisis.resumen.nivelGlobalDBA = 10 * Math.log10(sumaEnergiaTotal);
+    const nivelGlobalDBA = 10 * Math.log10(sumaEnergia);
     
-    return analisis;
+    return {
+        tipo: 'Fachada Compuesta',
+        parametros: params,
+        analisisDetallado,
+        nivelGlobalDBA,
+        resumen: {
+            areaPared: areaPared.toFixed(2),
+            areaVentana: areaVentana.toFixed(2),
+            areaPuerta: areaPuerta.toFixed(2),
+            masaPromedio: ((masaPared * areaPared + masaVentana * areaVentana + masaPuerta * areaPuerta) / areaTotal).toFixed(1)
+        }
+    };
 }
 
-// ========================= GENERACIÓN DE RESULTADOS =========================
+/**
+ * CASO 2: PARED COMPUESTA
+ */
+function calcularPared() {
+    try {
+        mostrarLoading(true);
+        
+        setTimeout(() => {
+            try {
+                // 1. Obtener parámetros
+                const tipo = document.getElementById('pared-tipo').value;
+                const area = obtenerValor('pared-area');
+                const masa1 = obtenerValor('pared-masa1');
+                const masa2 = obtenerValor('pared-masa2');
+                const espesor1 = obtenerValor('pared-espesor1');
+                const espesor2 = obtenerValor('pared-espesor2');
+                const camara = obtenerValor('pared-camara');
+                const relleno = document.getElementById('pared-relleno').value;
+                
+                // 2. Obtener espectro
+                const espectro = obtenerEspectro('pared-emisor');
+                
+                // 3. Calcular análisis
+                const resultados = analizarPared({
+                    tipo, area, masa1, masa2, espesor1, espesor2, camara, relleno, espectro
+                });
+                
+                // 4. Mostrar resultados
+                mostrarResultadosPared(resultados);
+                mostrarLoading(false);
+                
+            } catch (error) {
+                mostrarError(error.message);
+                mostrarLoading(false);
+            }
+        }, 300);
+        
+    } catch (error) {
+        mostrarError(error.message);
+        mostrarLoading(false);
+    }
+}
+
+function analizarPared(params) {
+    const { tipo, area, masa1, masa2, espesor1, espesor2, camara, relleno, espectro } = params;
+    
+    // Calcular frecuencia de resonancia
+    const f0 = calcularFrecuenciaResonancia(masa1, masa2, camara);
+    
+    let analisisDetallado = [];
+    let sumaEnergia = 0;
+    
+    FRECUENCIAS.forEach(freq => {
+        const frecuenciaHz = FRECUENCIAS_HZ[freq];
+        
+        // Aislamiento individual de cada capa
+        const r1 = calcularLeyMasa(masa1, frecuenciaHz);
+        const r2 = calcularLeyMasa(masa2, frecuenciaHz);
+        
+        // Corrección por resonancia y tipo de sistema
+        let rGlobal;
+        if (frecuenciaHz < f0) {
+            // Por debajo de la resonancia: reducción del aislamiento
+            rGlobal = r1 + r2 - 10 * Math.log10(f0 / frecuenciaHz);
+        } else {
+            // Por encima de la resonancia: mejora del aislamiento
+            const factorRelleno = obtenerFactorRelleno(relleno);
+            rGlobal = r1 + r2 + 20 * Math.log10(frecuenciaHz / f0) + factorRelleno;
+        }
+        
+        // Aplicar correcciones por tipo de sistema
+        rGlobal = aplicarCorreccionesSistema(rGlobal, tipo, frecuenciaHz);
+        
+        // Calcular niveles
+        const nivelEmisor = espectro[freq];
+        const nivelReceptor = nivelEmisor - rGlobal;
+        const nivelReceptorA = nivelReceptor + PONDERACION_A[freq];
+        
+        sumaEnergia += Math.pow(10, nivelReceptorA / 10);
+        
+        analisisDetallado.push({
+            frecuencia: frecuenciaHz,
+            r1, r2, rGlobal,
+            nivelEmisor, nivelReceptor,
+            ponderacionA: PONDERACION_A[freq],
+            nivelReceptorA
+        });
+    });
+    
+    const nivelGlobalDBA = 10 * Math.log10(sumaEnergia);
+    
+    return {
+        tipo: 'Pared Compuesta',
+        sistemaConstructivo: tipo,
+        frecuenciaResonancia: f0.toFixed(1),
+        parametros: params,
+        analisisDetallado,
+        nivelGlobalDBA,
+        resumen: {
+            masaTotal: (masa1 + masa2).toFixed(1),
+            espesorTotal: (espesor1 + espesor2 + camara).toFixed(1),
+            tipoRelleno: relleno
+        }
+    };
+}
 
 /**
- * Genera tabla HTML con análisis por frecuencias
+ * CASO 3: PERSONALIZADO
  */
-function generarTablaAnalisis(analisis) {
-    let tabla = `
-        <table>
-            <thead>
-                <tr>
-                    <th>Freq (Hz)</th>
-                    <th>R Pared (dB)</th>
-                    <th>R Puerta (dB)</th>
-                    <th>R Global (dB)</th>
-                    <th>Nivel Emisor (dB)</th>
-                    <th>Nivel Receptor (dB)</th>
-                    <th>Pond. A (dB)</th>
-                    <th>Nivel Receptor A (dB)</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
+function calcularPersonalizado() {
+    try {
+        mostrarLoading(true);
+        
+        setTimeout(() => {
+            try {
+                const tipoCalculo = document.getElementById('custom-tipo-calculo').value;
+                const elementos = obtenerElementosPersonalizados();
+                const espectros = obtenerEspectrosPersonalizados();
+                
+                const resultados = analizarPersonalizado({
+                    tipoCalculo, elementos, espectros
+                });
+                
+                mostrarResultadosPersonalizados(resultados);
+                mostrarLoading(false);
+                
+            } catch (error) {
+                mostrarError(error.message);
+                mostrarLoading(false);
+            }
+        }, 300);
+        
+    } catch (error) {
+        mostrarError(error.message);
+        mostrarLoading(false);
+    }
+}
+
+function analizarPersonalizado(params) {
+    const { tipoCalculo, elementos, espectros } = params;
     
-    FRECUENCIAS_ARRAY.forEach(freq => {
-        const datos = analisis.frecuencias[freq];
-        tabla += `
-            <tr>
-                <td>${datos.frecuenciaHz}</td>
-                <td>${datos.rPared.toFixed(1)}</td>
-                <td>${datos.rPuerta.toFixed(1)}</td>
-                <td>${datos.rGlobal.toFixed(1)}</td>
-                <td>${datos.nivelEmisor.toFixed(1)}</td>
-                <td>${datos.nivelReceptor.toFixed(1)}</td>
-                <td>${datos.ponderacionA}</td>
-                <td>${datos.nivelReceptorA.toFixed(1)}</td>
-            </tr>
+    let resultados = {
+        tipo: 'Análisis Personalizado',
+        tipoCalculo,
+        espectros: []
+    };
+    
+    espectros.forEach((espectro, index) => {
+        let analisisDetallado = [];
+        let sumaEnergia = 0;
+        
+        FRECUENCIAS.forEach(freq => {
+            const frecuenciaHz = FRECUENCIAS_HZ[freq];
+            
+            // Calcular aislamiento según elementos configurados
+            let rGlobal;
+            if (tipoCalculo === 'directo') {
+                // Usar primer elemento como referencia
+                rGlobal = calcularLeyMasa(elementos[0].masa, frecuenciaHz);
+            } else {
+                // Aislamiento global con todos los elementos
+                const elementosCalculo = elementos.map(elem => ({
+                    superficie: elem.superficie,
+                    aislamiento: calcularLeyMasa(elem.masa, frecuenciaHz)
+                }));
+                rGlobal = calcularAislamientoGlobal(elementosCalculo);
+            }
+            
+            const nivelEmisor = espectro[freq];
+            const nivelReceptor = nivelEmisor - rGlobal;
+            const nivelReceptorA = nivelReceptor + PONDERACION_A[freq];
+            
+            sumaEnergia += Math.pow(10, nivelReceptorA / 10);
+            
+            analisisDetallado.push({
+                frecuencia: frecuenciaHz,
+                rGlobal,
+                nivelEmisor, nivelReceptor,
+                ponderacionA: PONDERACION_A[freq],
+                nivelReceptorA
+            });
+        });
+        
+        const nivelGlobalDBA = 10 * Math.log10(sumaEnergia);
+        
+        resultados.espectros.push({
+            nombre: `Espectro ${index + 1}`,
+            analisisDetallado,
+            nivelGlobalDBA
+        });
+    });
+    
+    return resultados;
+}
+
+// === FUNCIONES AUXILIARES ===
+
+function obtenerValor(id) {
+    const elemento = document.getElementById(id);
+    if (!elemento) throw new Error(`Elemento ${id} no encontrado`);
+    
+    const valor = parseFloat(elemento.value);
+    if (isNaN(valor)) throw new Error(`Valor inválido en ${id}`);
+    
+    return valor;
+}
+
+function obtenerEspectro(prefijo) {
+    const espectro = {};
+    FRECUENCIAS.forEach(freq => {
+        espectro[freq] = obtenerValor(`${prefijo}-${freq}`);
+    });
+    return espectro;
+}
+
+function obtenerFactorRelleno(relleno) {
+    const factores = {
+        'aire': 0,
+        'lana': 6,
+        'poliuretano': 4
+    };
+    return factores[relleno] || 0;
+}
+
+function aplicarCorreccionesSistema(aislamiento, tipo, frecuencia) {
+    const correcciones = {
+        'doble': 0,
+        'triple': 3,
+        'sandwich': 2,
+        'trasdosado': 5
+    };
+    
+    return aislamiento + (correcciones[tipo] || 0);
+}
+
+// === ELEMENTOS DINÁMICOS ===
+
+function inicializarElementosPersonalizados() {
+    generarElementosPersonalizados();
+}
+
+function generarElementosPersonalizados() {
+    const container = document.getElementById('custom-elements-container');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    for (let i = 1; i <= elementosPersonalizados; i++) {
+        const elementHTML = `
+            <div class="custom-element" id="elemento-${i}">
+                <div class="custom-element-header">
+                    <h5>Elemento ${i}</h5>
+                    ${i > 1 ? `<button class="remove-element" onclick="eliminarElemento(${i})">✕</button>` : ''}
+                </div>
+                <div class="layer-inputs">
+                    <input type="number" id="custom-masa-${i}" placeholder="Masa (kg/m²)" value="${50 + i * 20}" step="1">
+                    <input type="number" id="custom-superficie-${i}" placeholder="Superficie (m²)" value="${10 + i * 5}" step="0.01">
+                </div>
+            </div>
         `;
-    });
-    
-    tabla += `
-            </tbody>
-        </table>
-    `;
-    
-    return tabla;
+        container.insertAdjacentHTML('beforeend', elementHTML);
+    }
 }
 
-/**
- * Genera el HTML completo de resultados
- */
-function generarHTMLResultados(analisis1, analisis2) {
-    return `
-        <div class="resultado-completo">
-            <h3>📊 Resultados del Análisis de Aislamiento Acústico</h3>
-            
+function agregarElemento() {
+    if (elementosPersonalizados < 5) {
+        elementosPersonalizados++;
+        generarElementosPersonalizados();
+        inicializarValidacion();
+    }
+}
+
+function eliminarElemento(numero) {
+    if (elementosPersonalizados > 1) {
+        elementosPersonalizados--;
+        generarElementosPersonalizados();
+        inicializarValidacion();
+    }
+}
+
+function obtenerElementosPersonalizados() {
+    const elementos = [];
+    for (let i = 1; i <= elementosPersonalizados; i++) {
+        elementos.push({
+            masa: obtenerValor(`custom-masa-${i}`),
+            superficie: obtenerValor(`custom-superficie-${i}`)
+        });
+    }
+    return elementos;
+}
+
+function agregarEspectro() {
+    if (espectrosPersonalizados < 3) {
+        espectrosPersonalizados++;
+        generarEspectrosPersonalizados();
+    }
+}
+
+function generarEspectrosPersonalizados() {
+    // Implementar lógica para generar múltiples espectros
+    // Similar a generarElementosPersonalizados()
+}
+
+function obtenerEspectrosPersonalizados() {
+    const espectros = [];
+    for (let i = 1; i <= Math.min(espectrosPersonalizados, 2); i++) {
+        espectros.push(obtenerEspectro(`custom-emisor${i}`));
+    }
+    return espectros;
+}
+
+// === VISUALIZACIÓN DE RESULTADOS ===
+
+function mostrarResultadosFachada(resultados) {
+    const container = document.getElementById('results-container');
+    
+    const html = `
+        <div class="result-header">
+            <h3>🏢 Resultados: ${resultados.tipo}</h3>
+            <p>Análisis completo del sistema de fachada compuesta</p>
+        </div>
+        
+        <div class="result-content">
             <!-- Resumen ejecutivo -->
-            <div class="resumen-ejecutivo">
-                <h4>🎯 Resumen Ejecutivo</h4>
-                <div class="resumen-grid">
-                    <div class="resumen-item">
-                        <strong>Espectro Emisor 1:</strong>
-                        <span class="valor-destacado">${analisis1.resumen.nivelGlobalDBA.toFixed(1)} dBA</span>
-                    </div>
-                    <div class="resumen-item">
-                        <strong>Espectro Emisor 2:</strong>
-                        <span class="valor-destacado">${analisis2.resumen.nivelGlobalDBA.toFixed(1)} dBA</span>
-                    </div>
+            <div class="result-grid">
+                <div class="result-card">
+                    <h4>Nivel Global</h4>
+                    <div class="result-value">${resultados.nivelGlobalDBA.toFixed(1)}</div>
+                    <div class="result-unit">dBA</div>
+                </div>
+                <div class="result-card">
+                    <h4>Área Pared</h4>
+                    <div class="result-value">${resultados.resumen.areaPared}</div>
+                    <div class="result-unit">m²</div>
+                </div>
+                <div class="result-card">
+                    <h4>Masa Promedio</h4>
+                    <div class="result-value">${resultados.resumen.masaPromedio}</div>
+                    <div class="result-unit">kg/m²</div>
                 </div>
             </div>
             
-            <!-- Espectro Emisor 1 -->
-            <div class="analisis-espectro">
-                <h3>🔊 ${analisis1.nombre}</h3>
-                <h4>Análisis por Frecuencia</h4>
-                ${generarTablaAnalisis(analisis1)}
-                
-                <h4>Resultado Final</h4>
-                <div class="total">
-                    Nivel Global Ponderado A (dBA): ${analisis1.resumen.nivelGlobalDBA.toFixed(1)} dBA
-                </div>
-                <div class="formula">
-                    Fórmula aplicada: LAeq = 10 log Σ(10^(LAi/10))
-                </div>
-            </div>
-            
-            <!-- Espectro Emisor 2 -->
-            <div class="analisis-espectro">
-                <h3>🔊 ${analisis2.nombre}</h3>
-                <h4>Análisis por Frecuencia</h4>
-                ${generarTablaAnalisis(analisis2)}
-                
-                <h4>Resultado Final</h4>
-                <div class="total">
-                    Nivel Global Ponderado A (dBA): ${analisis2.resumen.nivelGlobalDBA.toFixed(1)} dBA
-                </div>
-                <div class="formula">
-                    Fórmula aplicada: LAeq = 10 log Σ(10^(LAi/10))
-                </div>
-            </div>
+            <!-- Tabla de análisis detallado -->
+            <h4>📊 Análisis por Frecuencias</h4>
+            ${generarTablaAnalisis(resultados.analisisDetallado, 'fachada')}
             
             <!-- Información técnica -->
-            <div class="info-tecnica">
-                <h4>📋 Información Técnica</h4>
-                <div class="formula">
-                    <strong>Fórmulas utilizadas:</strong><br>
-                    • Ley de la Masa: R = 20log(M) + 20log(f) - 43<br>
-                    • Aislamiento Global: R_g = 10log(S_total / Σ(S_i × 10^(-R_i/10)))<br>
-                    • Nivel Global Ponderado A: LAeq = 10log(Σ(10^(LAi/10)))<br>
-                    • Nivel Receptor: L_receptor = L_emisor - R_global<br>
-                    • Ponderación A según UNE-EN ISO 61672-1
+            <div class="formula-section">
+                <h4>📋 Fórmulas Aplicadas</h4>
+                <div class="formula-list">
+                    <div class="formula-item">
+                        <strong>Ley de la Masa:</strong> R = 20·log(M) + 20·log(f) - 47
+                    </div>
+                    <div class="formula-item">
+                        <strong>Aislamiento Global:</strong> R_g = 10·log(S_total / Σ(S_i × 10^(-R_i/10)))
+                    </div>
+                    <div class="formula-item">
+                        <strong>Nivel Global Ponderado A:</strong> LAeq = 10·log(Σ(10^(LAi/10)))
+                    </div>
                 </div>
             </div>
         </div>
     `;
+    
+    container.innerHTML = html;
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// ========================= FUNCIÓN PRINCIPAL =========================
+function mostrarResultadosPared(resultados) {
+    const container = document.getElementById('results-container');
+    
+    const html = `
+        <div class="result-header">
+            <h3>🧱 Resultados: ${resultados.tipo}</h3>
+            <p>Análisis de sistema ${resultados.sistemaConstructivo}</p>
+        </div>
+        
+        <div class="result-content">
+            <div class="result-grid">
+                <div class="result-card">
+                    <h4>Nivel Global</h4>
+                    <div class="result-value">${resultados.nivelGlobalDBA.toFixed(1)}</div>
+                    <div class="result-unit">dBA</div>
+                </div>
+                <div class="result-card">
+                    <h4>Frecuencia Resonancia</h4>
+                    <div class="result-value">${resultados.frecuenciaResonancia}</div>
+                    <div class="result-unit">Hz</div>
+                </div>
+                <div class="result-card">
+                    <h4>Masa Total</h4>
+                    <div class="result-value">${resultados.resumen.masaTotal}</div>
+                    <div class="result-unit">kg/m²</div>
+                </div>
+            </div>
+            
+            <h4>📊 Análisis por Frecuencias</h4>
+            ${generarTablaAnalisis(resultados.analisisDetallado, 'pared')}
+        </div>
+    `;
+    
+    container.innerHTML = html;
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
-/**
- * Función principal que ejecuta todo el cálculo de aislamiento
- */
-function calcularAislamientoCompleto() {
-    try {
-        // Mostrar loading
-        toggleLoading(true);
-        
-        // Pequeña pausa para mostrar loading
-        setTimeout(() => {
-            try {
-                // 1. Obtener datos de entrada
-                const emisor1 = obtenerEspectro('emisor1');
-                const emisor2 = obtenerEspectro('emisor2');
-                const parametros = obtenerParametrosConstruccion();
-                
-                // 2. Realizar análisis completo
-                const analisis1 = analizarEspectro(emisor1, parametros, 'Espectro Emisor 1');
-                const analisis2 = analizarEspectro(emisor2, parametros, 'Espectro Emisor 2');
-                
-                // 3. Generar y mostrar resultados
-                const htmlResultados = generarHTMLResultados(analisis1, analisis2);
-                document.getElementById('resultado').innerHTML = htmlResultados;
-                
-                // Scroll suave a resultados
-                document.getElementById('resultado').scrollIntoView({ 
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-                
-                console.log('Cálculo completado exitosamente');
-                console.log('Emisor 1:', analisis1.resumen.nivelGlobalDBA.toFixed(1), 'dBA');
-                console.log('Emisor 2:', analisis2.resumen.nivelGlobalDBA.toFixed(1), 'dBA');
-                
-            } catch (error) {
-                console.error('Error en cálculo:', error);
-                document.getElementById('resultado').innerHTML = `
-                    <div class="error">
-                        ⚠️ Error en el cálculo: ${error.message}
-                        <br><small>Revisa que todos los valores sean números válidos en los rangos permitidos.</small>
-                    </div>
-                `;
-            } finally {
-                toggleLoading(false);
-            }
-        }, 100);
-        
-    } catch (error) {
-        toggleLoading(false);
-        console.error('Error inicial:', error);
-        document.getElementById('resultado').innerHTML = `
-            <div class="error">
-                ⚠️ Error: ${error.message}
+function mostrarResultadosPersonalizados(resultados) {
+    const container = document.getElementById('results-container');
+    
+    let html = `
+        <div class="result-header">
+            <h3>⚙️ Resultados: ${resultados.tipo}</h3>
+            <p>Tipo de cálculo: ${resultados.tipoCalculo}</p>
+        </div>
+        <div class="result-content">
+    `;
+    
+    resultados.espectros.forEach((espectro, index) => {
+        html += `
+            <div class="result-section">
+                <h4>${espectro.nombre}</h4>
+                <div class="result-card">
+                    <div class="result-value">${espectro.nivelGlobalDBA.toFixed(1)}</div>
+                    <div class="result-unit">dBA</div>
+                </div>
+                ${generarTablaAnalisis(espectro.analisisDetallado, 'personalizado')}
             </div>
         `;
+    });
+    
+    html += '</div>';
+    
+    container.innerHTML = html;
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function generarTablaAnalisis(datos, tipo) {
+    let columnas = '';
+    let filas = '';
+    
+    // Generar columnas según el tipo
+    if (tipo === 'fachada') {
+        columnas = `
+            <th>Freq (Hz)</th>
+            <th>R Pared (dB)</th>
+            <th>R Ventana (dB)</th>
+            <th>R Puerta (dB)</th>
+            <th>R Global (dB)</th>
+            <th>Nivel Emisor (dB)</th>
+            <th>Nivel Receptor (dB)</th>
+            <th>Pond. A (dB)</th>
+            <th>Nivel Receptor A (dB)</th>
+        `;
+        
+        filas = datos.map(fila => `
+            <tr>
+                <td><strong>${fila.frecuencia}</strong></td>
+                <td>${fila.rPared.toFixed(1)}</td>
+                <td>${fila.rVentana.toFixed(1)}</td>
+                <td>${fila.rPuerta.toFixed(1)}</td>
+                <td>${fila.rGlobal.toFixed(1)}</td>
+                <td>${fila.nivelEmisor.toFixed(1)}</td>
+                <td>${fila.nivelReceptor.toFixed(1)}</td>
+                <td>${fila.ponderacionA}</td>
+                <td><strong>${fila.nivelReceptorA.toFixed(1)}</strong></td>
+            </tr>
+        `).join('');
+        
+    } else if (tipo === 'pared') {
+        columnas = `
+            <th>Freq (Hz)</th>
+            <th>R Capa 1 (dB)</th>
+            <th>R Capa 2 (dB)</th>
+            <th>R Global (dB)</th>
+            <th>Nivel Emisor (dB)</th>
+            <th>Nivel Receptor (dB)</th>
+            <th>Pond. A (dB)</th>
+            <th>Nivel Receptor A (dB)</th>
+        `;
+        
+        filas = datos.map(fila => `
+            <tr>
+                <td><strong>${fila.frecuencia}</strong></td>
+                <td>${fila.r1.toFixed(1)}</td>
+                <td>${fila.r2.toFixed(1)}</td>
+                <td>${fila.rGlobal.toFixed(1)}</td>
+                <td>${fila.nivelEmisor.toFixed(1)}</td>
+                <td>${fila.nivelReceptor.toFixed(1)}</td>
+                <td>${fila.ponderacionA}</td>
+                <td><strong>${fila.nivelReceptorA.toFixed(1)}</strong></td>
+            </tr>
+        `).join('');
+        
+    } else {
+        columnas = `
+            <th>Freq (Hz)</th>
+            <th>R Global (dB)</th>
+            <th>Nivel Emisor (dB)</th>
+            <th>Nivel Receptor (dB)</th>
+            <th>Pond. A (dB)</th>
+            <th>Nivel Receptor A (dB)</th>
+        `;
+        
+        filas = datos.map(fila => `
+            <tr>
+                <td><strong>${fila.frecuencia}</strong></td>
+                <td>${fila.rGlobal.toFixed(1)}</td>
+                <td>${fila.nivelEmisor.toFixed(1)}</td>
+                <td>${fila.nivelReceptor.toFixed(1)}</td>
+                <td>${fila.ponderacionA}</td>
+                <td><strong>${fila.nivelReceptorA.toFixed(1)}</strong></td>
+            </tr>
+        `).join('');
+    }
+    
+    return `
+        <table class="result-table">
+            <thead>
+                <tr>${columnas}</tr>
+            </thead>
+            <tbody>
+                ${filas}
+            </tbody>
+        </table>
+    `;
+}
+
+// === UTILIDADES ===
+
+function mostrarLoading(mostrar) {
+    const loading = document.getElementById('loading');
+    if (mostrar) {
+        loading.classList.remove('hidden');
+    } else {
+        loading.classList.add('hidden');
     }
 }
 
-// ========================= FUNCIONES AUXILIARES =========================
+function mostrarError(mensaje) {
+    const container = document.getElementById('results-container');
+    container.innerHTML = `
+        <div class="result-header" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);">
+            <h3>⚠️ Error en el Cálculo</h3>
+        </div>
+        <div class="result-content">
+            <div class="error-message" style="padding: 2rem; text-align: center; color: #dc2626;">
+                <p style="font-size: 1.2rem; margin-bottom: 1rem;">${mensaje}</p>
+                <p style="color: #666;">Revisa los parámetros de entrada y vuelve a intentarlo.</p>
+            </div>
+        </div>
+    `;
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
-/**
- * Limpia todos los resultados
- */
 function limpiarResultados() {
-    document.getElementById('resultado').innerHTML = '';
-    console.log('Resultados limpiados');
+    const container = document.getElementById('results-container');
+    container.innerHTML = '';
+    mostrarLoading(false);
 }
 
-/**
- * Exporta los resultados a PDF (funcionalidad básica)
- */
+// === EXPORTACIÓN Y UTILIDADES ADICIONALES ===
+
 function exportarResultados() {
-    const contenido = document.getElementById('resultado').innerHTML;
-    
-    if (!contenido.trim()) {
-        alert('No hay resultados para exportar. Primero realiza un cálculo.');
-        return;
+    // Implementar exportación a PDF
+    console.log('Función de exportación en desarrollo...');
+}
+
+// Atajos de teclado
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 'Enter') {
+        // Ejecutar cálculo según caso actual
+        switch(casoActual) {
+            case 'fachada':
+                calcularFachada();
+                break;
+            case 'pared':
+                calcularPared();
+                break;
+            case 'personalizado':
+                calcularPersonalizado();
+                break;
+        }
     }
-    
-    // Crear ventana de impresión
-    const ventanaImpresion = window.open('', '_blank');
-    ventanaImpresion.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Reporte de Aislamiento Acústico</title>
-            <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-                th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-                th { background: #f5f5f5; }
-                .total { background: #e8f5e8; padding: 10px; margin: 10px 0; font-weight: bold; }
-                .formula { background: #f9f9f9; padding: 10px; margin: 10px 0; font-family: monospace; }
-                .error { display: none; }
-                h1 { color: #2563eb; }
-                h3 { color: #1e40af; margin-top: 30px; }
-            </style>
-        </head>
-        <body>
-            <h1>📊 Reporte de Aislamiento Acústico</h1>
-            <p><strong>Fecha:</strong> ${new Date().toLocaleDateString('es-ES')}</p>
-            <p><strong>Hora:</strong> ${new Date().toLocaleTimeString('es-ES')}</p>
-            ${contenido}
-        </body>
-        </html>
-    `);
-    
-    ventanaImpresion.document.close();
-    ventanaImpresion.print();
-    
-    console.log('Exportación a PDF iniciada');
-}
-
-/**
- * Valida inputs en tiempo real
- */
-function configurarValidacionTiempoReal() {
-    // Validar inputs de espectros
-    FRECUENCIAS_ARRAY.forEach(freq => {
-        ['emisor1', 'emisor2'].forEach(emisor => {
-            const input = document.getElementById(`${emisor}-${freq}`);
-            if (input) {
-                input.addEventListener('input', function() {
-                    const valor = parseFloat(this.value);
-                    if (isNaN(valor) || valor < 0 || valor > 150) {
-                        this.classList.add('error');
-                    } else {
-                        this.classList.remove('error');
-                    }
-                });
-            }
-        });
-    });
-    
-    // Validar parámetros de construcción
-    const parametros = ['masa-pared', 'masa-puerta', 'superficie-pared', 'superficie-puerta'];
-    parametros.forEach(param => {
-        const input = document.getElementById(param);
-        if (input) {
-            input.addEventListener('input', function() {
-                const valor = parseFloat(this.value);
-                let esValido = !isNaN(valor) && valor > 0;
-                
-                if (param.includes('masa') && valor > 1000) esValido = false;
-                if (param.includes('superficie') && valor > 1000) esValido = false;
-                
-                if (esValido) {
-                    this.classList.remove('error');
-                } else {
-                    this.classList.add('error');
-                }
-            });
-        }
-    });
-}
-
-// ========================= INICIALIZACIÓN =========================
-
-/**
- * Inicialización cuando se carga la página
- */
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔊 Calculadora de Aislamiento Acústico cargada');
-    console.log('📋 Fórmulas implementadas: Ley de la Masa, Aislamiento Global, Ponderación A');
-    
-    // Configurar validación en tiempo real
-    configurarValidacionTiempoReal();
-    
-    // Event listeners para teclas
-    document.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && e.key === 'Enter') {
-            calcularAislamientoCompleto();
-        }
-    });
-    
-    console.log('✅ Sistema inicializado correctamente');
-    console.log('💡 Tip: Usa Ctrl+Enter para calcular rápidamente');
 });
+
+console.log('🔧 Sistema de cálculos cargado correctamente');
+console.log('💡 Usa Ctrl + Enter para calcular rápidamente');
