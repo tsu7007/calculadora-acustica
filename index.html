@@ -9,101 +9,80 @@
 <body>
     <div class="container">
         <header>
-            <h1>Calculadora de Aislamiento Acústico</h1>
-            <p>Análisis de Aislamiento Total de Pared Compuesta</p>
+            <h1>🔊 Calculadora de Aislamiento Acústico</h1>
+            <p>Calculadora automatizada para análisis de aislamiento acústico en paredes compuestas</p>
         </header>
 
-        <div class="parametros-construccion">
-            <h2>Parámetros de la Construcción</h2>
-            <div class="parametros-grid">
-                <div class="parametro">
-                    <label>Dimensiones Pared:</label>
-                    <span>10m × 4m = 40m²</span>
-                </div>
-                <div class="parametro">
-                    <label>Dimensiones Puerta:</label>
-                    <span>3m × 1.66m = 4.98m²</span>
-                </div>
-                <div class="parametro">
-                    <label>Superficie Pared:</label>
-                    <span>35.02m²</span>
-                </div>
-                <div class="parametro">
-                    <label>Masa Pared:</label>
-                    <span>200 kg/m²</span>
-                </div>
-                <div class="parametro">
-                    <label>Masa Puerta:</label>
-                    <span>10 kg/m²</span>
-                </div>
+        <div class="card">
+            <h2>📊 Espectros de Emisión</h2>
+            <p>Introduce los niveles de emisión para cada banda de frecuencia (dB):</p>
+            
+            <div class="tabla-container">
+                <table id="tabla-espectros">
+                    <thead>
+                        <tr>
+                            <th>Espectro</th>
+                            <th>63 Hz</th>
+                            <th>125 Hz</th>
+                            <th>250 Hz</th>
+                            <th>500 Hz</th>
+                            <th>1k Hz</th>
+                            <th>2k Hz</th>
+                            <th>4k Hz</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="label">Emisor 1 (dB)</td>
+                            <td><input type="number" id="emisor1-63" value="70" step="0.1" class="input-freq"></td>
+                            <td><input type="number" id="emisor1-125" value="80" step="0.1" class="input-freq"></td>
+                            <td><input type="number" id="emisor1-250" value="65" step="0.1" class="input-freq"></td>
+                            <td><input type="number" id="emisor1-500" value="60" step="0.1" class="input-freq"></td>
+                            <td><input type="number" id="emisor1-1k" value="51" step="0.1" class="input-freq"></td>
+                            <td><input type="number" id="emisor1-2k" value="65" step="0.1" class="input-freq"></td>
+                            <td><input type="number" id="emisor1-4k" value="54" step="0.1" class="input-freq"></td>
+                        </tr>
+                        <tr>
+                            <td class="label">Emisor 2 (dB)</td>
+                            <td><input type="number" id="emisor2-63" value="75" step="0.1" class="input-freq"></td>
+                            <td><input type="number" id="emisor2-125" value="75" step="0.1" class="input-freq"></td>
+                            <td><input type="number" id="emisor2-250" value="64" step="0.1" class="input-freq"></td>
+                            <td><input type="number" id="emisor2-500" value="58" step="0.1" class="input-freq"></td>
+                            <td><input type="number" id="emisor2-1k" value="52" step="0.1" class="input-freq"></td>
+                            <td><input type="number" id="emisor2-2k" value="51" step="0.1" class="input-freq"></td>
+                            <td><input type="number" id="emisor2-4k" value="60" step="0.1" class="input-freq"></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <div class="espectros-section">
-            <h2>Espectros de Emisión</h2>
-            
-            <div class="espectro-container">
-                <h3>Espectro Emisor 1</h3>
-                <table class="espectro-tabla">
-                    <tr>
-                        <th>Frecuencia (Hz)</th>
-                        <th>63</th>
-                        <th>125</th>
-                        <th>250</th>
-                        <th>500</th>
-                        <th>1k</th>
-                        <th>2k</th>
-                        <th>4k</th>
-                    </tr>
-                    <tr>
-                        <td><strong>Nivel (dB)</strong></td>
-                        <td><input type="number" id="emisor1-63" value="70" step="0.1"></td>
-                        <td><input type="number" id="emisor1-125" value="80" step="0.1"></td>
-                        <td><input type="number" id="emisor1-250" value="65" step="0.1"></td>
-                        <td><input type="number" id="emisor1-500" value="60" step="0.1"></td>
-                        <td><input type="number" id="emisor1-1k" value="51" step="0.1"></td>
-                        <td><input type="number" id="emisor1-2k" value="65" step="0.1"></td>
-                        <td><input type="number" id="emisor1-4k" value="54" step="0.1"></td>
-                    </tr>
-                </table>
-            </div>
-
-            <div class="espectro-container">
-                <h3>Espectro Emisor 2</h3>
-                <table class="espectro-tabla">
-                    <tr>
-                        <th>Frecuencia (Hz)</th>
-                        <th>63</th>
-                        <th>125</th>
-                        <th>250</th>
-                        <th>500</th>
-                        <th>1k</th>
-                        <th>2k</th>
-                        <th>4k</th>
-                    </tr>
-                    <tr>
-                        <td><strong>Nivel (dB)</strong></td>
-                        <td><input type="number" id="emisor2-63" value="75" step="0.1"></td>
-                        <td><input type="number" id="emisor2-125" value="75" step="0.1"></td>
-                        <td><input type="number" id="emisor2-250" value="64" step="0.1"></td>
-                        <td><input type="number" id="emisor2-500" value="58" step="0.1"></td>
-                        <td><input type="number" id="emisor2-1k" value="52" step="0.1"></td>
-                        <td><input type="number" id="emisor2-2k" value="51" step="0.1"></td>
-                        <td><input type="number" id="emisor2-4k" value="60" step="0.1"></td>
-                    </tr>
-                </table>
+        <div class="card">
+            <h2>🏗️ Parámetros de Construcción</h2>
+            <div class="parametros-grid">
+                <div class="parametro">
+                    <label for="masa-pared">Masa Pared (kg/m²):</label>
+                    <input type="number" id="masa-pared" value="200" step="1" min="50" max="1000">
+                </div>
+                <div class="parametro">
+                    <label for="masa-puerta">Masa Puerta (kg/m²):</label>
+                    <input type="number" id="masa-puerta" value="10" step="1" min="5" max="100">
+                </div>
+                <div class="parametro">
+                    <label for="superficie-pared">Superficie Pared (m²):</label>
+                    <input type="number" id="superficie-pared" value="35.02" step="0.01" min="1" max="1000">
+                </div>
+                <div class="parametro">
+                    <label for="superficie-puerta">Superficie Puerta (m²):</label>
+                    <input type="number" id="superficie-puerta" value="4.98" step="0.01" min="0.5" max="50">
+                </div>
             </div>
         </div>
 
         <div class="controles">
-            <button id="calcular-btn" onclick="calcularAislamientoCompleto()">
-                <span class="btn-icon">🔊</span>
-                Calcular Aislamiento Total
-            </button>
-            <button id="limpiar-btn" onclick="limpiarResultados()">
-                <span class="btn-icon">🗑️</span>
-                Limpiar Resultados
-            </button>
+            <button id="btn-calcular" onclick="calcularAislamientoCompleto()">🧮 Calcular Aislamiento</button>
+            <button id="btn-limpiar" onclick="limpiarResultados()">🗑️ Limpiar Resultados</button>
+            <button id="btn-exportar" onclick="exportarResultados()">📄 Exportar PDF</button>
         </div>
 
         <div id="loading" class="loading hidden">
@@ -111,21 +90,11 @@
             <p>Calculando aislamiento acústico...</p>
         </div>
 
-        <div id="resultado" class="resultado-container"></div>
+        <div id="resultado" class="resultado"></div>
 
         <footer>
-            <div class="formulas-info">
-                <h3>Fórmulas Utilizadas</h3>
-                <div class="formula">
-                    <strong>Ley de la Masa:</strong> R = 20·log(M) + 20·log(f) - 43
-                </div>
-                <div class="formula">
-                    <strong>Aislamiento Global:</strong> R_g = 10·log(S_total / (S₁·10^(-R₁/10) + S₂·10^(-R₂/10)))
-                </div>
-                <div class="formula">
-                    <strong>Nivel Global Ponderado A:</strong> LAeq = 10·log(Σ(10^(LAᵢ/10)))
-                </div>
-            </div>
+            <p>🔧 Calculadora basada en la Ley de la Masa y normativas UNE-EN ISO 61672-1</p>
+            <p>📚 Fórmulas: R = 20log(M) + 20log(f) - 43 | LAeq = 10log(Σ10^(LAi/10))</p>
         </footer>
     </div>
 
